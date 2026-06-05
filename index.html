@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="zh-TW" class="dark">
+<html lang="zh-TW" class="dark overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>💪 每日運動追蹤與姿勢提醒器</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,24 +34,24 @@
         .collapse-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease-out;
             opacity: 0;
         }
         .collapse-content.show {
-            max-height: 600px;
+            max-height: 800px;
             opacity: 1;
-            transition: max-height 0.4s ease-in, opacity 0.3s ease-in;
+            transition: max-height 0.4s cubic-bezier(0, 0, 0.2, 1), opacity 0.3s ease-in;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 5px;
+            height: 5px;
         }
         ::-webkit-scrollbar-track {
-            background: #1e293b;
+            background: #0f172a;
         }
         ::-webkit-scrollbar-thumb {
-            background: #475569;
+            background: #334155;
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
@@ -60,141 +60,149 @@
         /* Confetti animation */
         .confetti-piece {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             top: 0;
             opacity: 0;
             animation: fall 3s infinite ease-out;
         }
         @keyframes fall {
             0% { top: -20px; opacity: 1; transform: translateX(0) rotate(0deg); }
-            100% { top: 90%; opacity: 0; transform: translateX(100px) rotate(360deg); }
+            100% { top: 95%; opacity: 0; transform: translateX(80px) rotate(360deg); }
+        }
+        /* Hide scrollbars for side navigation tabs on mobile */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-brand-500 selection:text-slate-900 transition-colors duration-300">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-brand-500 selection:text-slate-900 transition-colors duration-300 overflow-x-hidden">
 
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
 
-    <!-- MAIN CONTAINER (Perfect for iPad & Desktop grid) -->
-    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+    <!-- MAIN CONTAINER (Perfect for mobile, iPad & Desktop) -->
+    <div class="max-w-7xl mx-auto px-4 py-4 md:py-8">
 
         <!-- HEADER -->
-        <header class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-slate-900/60 backdrop-blur border border-slate-800 p-6 rounded-2xl shadow-xl">
-            <div class="flex items-center gap-4">
-                <div class="w-14 h-14 bg-brand-500/10 text-brand-500 rounded-2xl flex items-center justify-center text-2xl border border-brand-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+        <header class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4 mb-6 bg-slate-900/60 backdrop-blur border border-slate-800 p-4 sm:p-6 rounded-2xl shadow-xl">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="w-12 h-12 sm:w-14 sm:h-14 bg-brand-500/10 text-brand-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl border border-brand-500/30 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                     <i class="fa-solid fa-dumbbell animate-pulse"></i>
                 </div>
-                <div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">每日動能追蹤</h1>
-                    <p class="text-sm text-slate-400 mt-1">規劃、姿勢、紀錄 — 每天進步一點點</p>
+                <div class="min-w-0">
+                    <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent truncate">每日動能追蹤</h1>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-0.5 truncate">規劃、姿勢、紀錄 — 每天進步一點點</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+            <!-- Header Action Controls (Perfect 50/50 Grid on Mobile, Flex on Desktop) -->
+            <div class="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full lg:w-auto">
                 <!-- Streak Badge -->
-                <div class="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 text-orange-400 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-lg">
-                    <i class="fa-solid fa-fire text-lg text-orange-500 animate-bounce"></i>
-                    <div>
-                        <span class="text-xs text-orange-400/75 block leading-none">連續達成</span>
-                        <span class="text-lg" id="streak-counter">0</span> <span class="text-xs">天</span>
+                <div class="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 text-orange-400 px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center sm:justify-start gap-2 font-bold shadow-lg text-sm">
+                    <i class="fa-solid fa-fire text-orange-500 animate-bounce shrink-0"></i>
+                    <div class="text-center sm:text-left">
+                        <span class="text-[10px] text-orange-400/75 block leading-none mb-0.5">連續達成</span>
+                        <span class="text-sm sm:text-base" id="streak-counter">0</span> <span class="text-[11px]">天</span>
                     </div>
                 </div>
                 <!-- Settings Trigger Button -->
-                <button onclick="openTemplateModal()" class="bg-slate-800 hover:bg-slate-700 hover:text-brand-500 text-slate-200 border border-slate-700 hover:border-brand-500/50 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md">
-                    <i class="fa-solid fa-calendar-gear"></i>
-                    <span class="font-medium hidden sm:inline">每週課表設定</span>
-                    <span class="font-medium sm:hidden">設定</span>
+                <button onclick="openTemplateModal()" class="bg-slate-800 hover:bg-slate-700 hover:text-brand-500 text-slate-200 border border-slate-700 hover:border-brand-500/50 px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md text-sm shrink-0">
+                    <i class="fa-solid fa-calendar-gear text-brand-500 sm:text-slate-400"></i>
+                    <span class="font-medium">每週課表設定</span>
                 </button>
             </div>
         </header>
 
         <!-- GOLDEN RULE NOTIFICATION (Pinned at top of dashboard) -->
-        <div class="bg-gradient-to-r from-teal-500/15 to-brand-500/10 border border-brand-500/30 rounded-2xl p-5 mb-8 shadow-lg relative overflow-hidden">
-            <div class="absolute right-0 top-0 translate-x-4 -translate-y-4 text-brand-500/5 text-9xl pointer-events-none select-none font-bold">
+        <div class="bg-gradient-to-r from-teal-500/15 to-brand-500/10 border border-brand-500/20 rounded-2xl p-4 sm:p-5 mb-6 shadow-lg relative overflow-hidden">
+            <div class="absolute right-0 top-0 translate-x-4 -translate-y-4 text-brand-500/5 text-8xl pointer-events-none select-none font-bold">
                 🚶
             </div>
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                <div class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-xl shrink-0 border border-brand-500/20">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start sm:items-center">
+                <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-lg shrink-0 border border-brand-500/20">
                     <i class="fa-solid fa-person-walking animate-bounce"></i>
                 </div>
-                <div>
-                    <h4 class="font-bold text-slate-100 text-sm md:text-base flex items-center gap-2">
+                <div class="min-w-0">
+                    <h4 class="font-bold text-slate-100 text-xs sm:text-sm md:text-base flex items-center gap-2 flex-wrap">
                         🌟 每日最高優先級黃金任務
-                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">核心核心！</span>
+                        <span class="text-[9px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30 font-semibold">超級關鍵！</span>
                     </h4>
-                    <p class="text-slate-300 text-xs md:text-sm mt-1 leading-relaxed">
-                        <strong class="text-brand-400 font-extrabold text-sm md:text-base">「 上班坐 1～2 小時，站起來走 2 分鐘。」</strong>
-                        這件事對妳骨盆血流與下肢健康的關鍵程度，<span class="underline decoration-amber-500 decoration-2 underline-offset-2 text-slate-200 font-bold">甚至遠遠超過多做 100 下青蛙趴！</span> 請務必在下方打勾標記喔！
+                    <p class="text-slate-300 text-xs sm:text-sm mt-1 leading-relaxed">
+                        <strong class="text-brand-400 font-extrabold">「 上班坐 1～2 小時，站起來走 2 分鐘。」</strong>
+                        這對妳骨盆血流與大腿健康的關鍵程度，<span class="underline decoration-amber-500 decoration-2 underline-offset-2 text-slate-200 font-bold">甚至遠遠超過多做 100 下青蛙趴！</span> 記得在下方打勾喔！
                     </p>
                 </div>
             </div>
         </div>
 
-        <!-- LAYOUT GRID (Responsive Columns for Desktop vs iPad/Mobile) -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- LAYOUT GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- LEFT & CENTER: TODAY'S WORKOUTS (2/3 width on desktop/tablet) -->
+            <!-- LEFT & CENTER: TODAY'S WORKOUTS (2/3 width on desktop) -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Date & Routine Header -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg">
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                        <div>
-                            <div class="flex items-center gap-2 text-brand-500 font-semibold text-sm tracking-wider uppercase">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 text-brand-500 font-semibold text-xs tracking-wider uppercase">
                                 <i class="fa-regular fa-calendar-days"></i>
-                                <span id="today-date-str">2026年06月05日 星期五</span>
+                                <span id="today-date-str" class="truncate">2026年06月05日 星期五</span>
                             </div>
-                            <h2 class="text-xl md:text-2xl font-bold text-slate-100 mt-1 flex items-center gap-2" id="today-routine-title">
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-slate-100 mt-1 flex items-center gap-2 break-words" id="today-routine-title">
                                 週五：下臀＋圓臀日
                             </h2>
                         </div>
                         <!-- Daily Progress Indicator -->
-                        <div class="flex items-center gap-3 bg-slate-950/60 border border-slate-800/80 px-4 py-3 rounded-xl min-w-[140px]">
-                            <div class="flex-1">
-                                <div class="text-xs text-slate-400">完成進度</div>
-                                <div class="text-xl font-extrabold text-brand-500" id="progress-percentage">0%</div>
+                        <div class="flex items-center gap-3 bg-slate-950/60 border border-slate-800/80 px-4 py-2.5 rounded-xl w-full sm:w-auto shrink-0 justify-between sm:justify-start">
+                            <div class="min-w-0">
+                                <div class="text-[10px] text-slate-400 leading-none mb-0.5">今日完成進度</div>
+                                <div class="text-lg font-extrabold text-brand-500 leading-none" id="progress-percentage">0%</div>
                             </div>
-                            <div class="w-10 h-10 rounded-full border-4 border-slate-800 flex items-center justify-center relative overflow-hidden">
-                                <div id="progress-spinner" class="absolute inset-0 border-4 border-brand-500 transition-all duration-300" style="clip-path: polygon(50% 50%, 50% 0%, 50% 0%)"></div>
-                                <i class="fa-solid fa-check text-xs text-brand-500" id="progress-check-icon"></i>
+                            <div class="w-9 h-9 rounded-full border-[3px] border-slate-800 flex items-center justify-center relative overflow-hidden shrink-0">
+                                <div id="progress-spinner" class="absolute inset-0 border-[3px] border-brand-500 transition-all duration-300" style="clip-path: polygon(50% 50%, 50% 0%, 50% 0%)"></div>
+                                <i class="fa-solid fa-check text-[11px] text-brand-500" id="progress-check-icon"></i>
                             </div>
                         </div>
                     </div>
 
                     <!-- Progress Bar -->
-                    <div class="w-full bg-slate-800 h-2.5 rounded-full mt-4 overflow-hidden">
+                    <div class="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
                         <div id="progress-bar-fill" class="bg-gradient-to-r from-brand-500 to-teal-400 h-full rounded-full w-0 transition-all duration-500"></div>
                     </div>
                 </div>
 
                 <!-- Active Workouts List -->
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold flex items-center gap-2 text-slate-300">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center gap-2">
+                        <h3 class="text-sm sm:text-base font-bold flex items-center gap-2 text-slate-300 truncate">
                             <i class="fa-solid fa-list-check text-brand-500"></i>
                             今日動作清單
                         </h3>
                         <!-- Add custom exercise for today (Option C) -->
-                        <button onclick="openQuickAddModal()" class="text-xs bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 transition-all duration-150">
+                        <button onclick="openQuickAddModal()" class="text-[11px] bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 shrink-0 transition-all duration-150">
                             <i class="fa-solid fa-plus"></i>
-                            新增今日臨時項目
+                            <span>今日臨時項目</span>
                         </button>
                     </div>
 
                     <!-- Empty State -->
-                    <div id="empty-state" class="hidden bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl p-10 text-center">
-                        <div class="w-16 h-16 bg-slate-800/80 text-slate-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
+                    <div id="empty-state" class="hidden bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl p-8 text-center">
+                        <div class="w-14 h-14 bg-slate-800/80 text-slate-500 rounded-full flex items-center justify-center text-lg mx-auto mb-3">
                             <i class="fa-solid fa-couch"></i>
                         </div>
-                        <h4 class="text-slate-300 font-bold mb-1">今天安排休息嗎？</h4>
-                        <p class="text-sm text-slate-500 max-w-sm mx-auto mb-4">今天每週預設課表沒有安排項目。您可以享受休息日，或是點擊上方新增臨時項目動動身體！</p>
-                        <button onclick="openQuickAddModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-lg">
+                        <h4 class="text-slate-300 font-bold mb-1 text-sm sm:text-base">今天安排休息嗎？</h4>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">今天預設課表沒有安排項目。您可以享受休息，或是新增臨時項目動動身體！</p>
+                        <button onclick="openQuickAddModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition-colors shadow-lg">
                             <i class="fa-solid fa-plus mr-1"></i> 新增今天運動
                         </button>
                     </div>
 
                     <!-- Workout Cards Grid -->
-                    <div id="workout-list" class="space-y-4">
+                    <div id="workout-list" class="space-y-3">
                         <!-- Loaded dynamically via JS -->
                     </div>
                 </div>
@@ -203,17 +211,17 @@
             <!-- RIGHT COLUMN: CALENDAR & MOTIVATION -->
             <div class="space-y-6">
                 <!-- Mini Calendar Section -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-base font-bold flex items-center gap-2 text-slate-200">
+                        <h3 class="text-sm sm:text-base font-bold flex items-center gap-2 text-slate-200">
                             <i class="fa-solid fa-calendar-check text-brand-500"></i>
                             本月努力軌跡
                         </h3>
-                        <span id="calendar-month-name" class="text-xs text-slate-400 font-medium bg-slate-800 px-2.5 py-1 rounded-md">6月</span>
+                        <span id="calendar-month-name" class="text-[10px] sm:text-xs text-slate-400 font-semibold bg-slate-800 px-2 py-1 rounded">6月</span>
                     </div>
 
                     <!-- Calendar Grid Header -->
-                    <div class="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 font-bold mb-2">
+                    <div class="grid grid-cols-7 gap-1 text-center text-[10px] sm:text-xs text-slate-500 font-bold mb-2">
                         <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
                     </div>
                     <!-- Calendar Days Grid -->
@@ -221,36 +229,36 @@
                         <!-- Loaded dynamically via JS -->
                     </div>
 
-                    <div class="mt-4 pt-4 border-t border-slate-800 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-400">
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-brand-500 inline-block shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
+                    <div class="mt-4 pt-4 border-t border-slate-800/80 flex flex-wrap gap-x-3 gap-y-2 text-[10px] sm:text-xs text-slate-400">
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-brand-500 inline-block shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
                             <span>完全達成</span>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 inline-block"></span>
                             <span>部分達成</span>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/50 inline-block"></span>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-rose-500/50 inline-block"></span>
                             <span>未達標</span>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span class="w-2.5 h-2.5 rounded-full bg-slate-800 inline-block"></span>
-                            <span>休息日/無項目</span>
+                        <div class="flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-slate-800 inline-block"></span>
+                            <span>休息日</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Motivation & Quick Tips Card -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 shadow-lg relative overflow-hidden">
-                    <div class="absolute -right-4 -bottom-4 text-slate-800/20 text-8xl pointer-events-none font-bold">
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-slate-800/25 text-7xl sm:text-8xl pointer-events-none font-bold">
                         💪
                     </div>
-                    <h3 class="text-base font-bold text-slate-200 mb-2 flex items-center gap-2">
+                    <h3 class="text-sm sm:text-base font-bold text-slate-200 mb-2 flex items-center gap-2">
                         <i class="fa-solid fa-quote-left text-brand-500"></i>
                         今日健康語錄
                     </h3>
-                    <p id="motivational-quote" class="text-sm text-slate-400 leading-relaxed italic">
+                    <p id="motivational-quote" class="text-xs sm:text-sm text-slate-400 leading-relaxed italic">
                         「慢慢做，把姿勢做對。一下高質量的動作，勝過十下借力、受傷的練習。」
                     </p>
                 </div>
@@ -262,38 +270,38 @@
 
     <!-- MODAL: WORKOUT QUICK ADD (TODAY ONLY) -->
     <div id="quick-add-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[calc(100dvh-2rem)] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <h3 class="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-plus text-brand-500"></i>
-                    新增今日臨時運動項目
+                    新增今日臨時項目
                 </h3>
-                <button onclick="closeQuickAddModal()" class="text-slate-400 hover:text-slate-200">
+                <button onclick="closeQuickAddModal()" class="text-slate-400 hover:text-slate-200 p-1">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <form id="quick-add-form" onsubmit="handleQuickAdd(event)" class="p-6 space-y-4">
+            <form id="quick-add-form" onsubmit="handleQuickAdd(event)" class="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">運動名稱 *</label>
-                    <input type="text" id="add-ex-name" required placeholder="例如：開合跳、棒式、波比跳" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">運動名稱 *</label>
+                    <input type="text" id="add-ex-name" required placeholder="例如：側躺貝殼、深蹲、站姿抬腿" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-slate-100 outline-none text-xs sm:text-sm transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">設定目標 *</label>
-                    <input type="text" id="add-ex-target" required placeholder="例如：20下 * 3組、維持1分鐘" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">設定目標 *</label>
+                    <input type="text" id="add-ex-target" required placeholder="例如：20下 * 3組、維持30秒" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-slate-100 outline-none text-xs sm:text-sm transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">作法步驟 (每行一個步驟，可不填)</label>
-                    <textarea id="add-ex-steps" rows="3" placeholder="第一步...&#10;第二步...&#10;第三步..." class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2 text-slate-100 outline-none text-sm transition-colors"></textarea>
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">作法步驟 (每行一個步驟，可不填)</label>
+                    <textarea id="add-ex-steps" rows="3" placeholder="第一步...&#10;第二步...&#10;第三步..." class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-1.5 text-slate-100 outline-none text-xs sm:text-sm transition-colors"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">⚠️ 重點提醒 (重要姿勢警告，可不填)</label>
-                    <input type="text" id="add-ex-tips" placeholder="例如：背部打直、膝蓋不內夾" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                    <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">⚠️ 重點提醒 (重要姿勢警告，可不填)</label>
+                    <input type="text" id="add-ex-tips" placeholder="例如：背部保持打直，臀部用力縮緊" class="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-3 py-2 text-slate-100 outline-none text-xs sm:text-sm transition-colors">
                 </div>
 
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="button" onclick="closeQuickAddModal()" class="px-5 py-2.5 rounded-xl border border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors text-sm">取消</button>
-                    <button type="submit" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold rounded-xl transition-colors text-sm">新增至今日課表</button>
+                <div class="flex justify-end gap-2.5 pt-2 shrink-0">
+                    <button type="button" onclick="closeQuickAddModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors text-xs">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold rounded-xl transition-colors text-xs">新增至今日課表</button>
                 </div>
             </form>
         </div>
@@ -301,66 +309,66 @@
 
 
     <!-- MODAL: WEEKLY TEMPLATE SETTINGS -->
-    <div id="template-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-40 flex items-center justify-center p-2 md:p-4 hidden">
-        <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl h-[90vh] md:h-[80vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div id="template-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-40 flex items-center justify-center p-3 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl h-[85dvh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
             <!-- Modal Header -->
-            <div class="p-4 md:p-6 border-b border-slate-800 flex justify-between items-center">
-                <div>
-                    <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div class="min-w-0 pr-4">
+                    <h3 class="text-base sm:text-lg font-bold text-slate-100 flex items-center gap-2 truncate">
                         <i class="fa-solid fa-calendar-gear text-brand-500"></i>
                         每週預設課表與動作細節設定
                     </h3>
-                    <p class="text-xs text-slate-400 mt-1">設定好後，每天過期重置會自動套用該星期對應的預設課表</p>
+                    <p class="text-[10px] sm:text-xs text-slate-400 mt-0.5 truncate">自動套用對應週預設項目，讓妳直接開練不花時間回想</p>
                 </div>
-                <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-slate-200 p-2">
+                <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-slate-200 p-1 shrink-0">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
             <!-- Modal Content - Split layout -->
-            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
 
-                <!-- Left panel: Day tabs -->
-                <div class="w-full md:w-1/4 border-b md:border-b-0 md:border-r border-slate-800 flex md:flex-col overflow-x-auto md:overflow-y-auto bg-slate-950/40 divide-x md:divide-x-0 md:divide-y divide-slate-850 shrink-0">
-                    <button onclick="switchTemplateTab(1)" id="tab-1" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週一：臀部重點日</button>
-                    <button onclick="switchTemplateTab(2)" id="tab-2" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週二</button>
-                    <button onclick="switchTemplateTab(3)" id="tab-3" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週三</button>
-                    <button onclick="switchTemplateTab(4)" id="tab-4" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週四</button>
-                    <button onclick="switchTemplateTab(5)" id="tab-5" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週五</button>
-                    <button onclick="switchTemplateTab(6)" id="tab-6" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週六</button>
-                    <button onclick="switchTemplateTab(7)" id="tab-7" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週日</button>
+                <!-- Left panel: Day tabs (Perfect Horizontal scrolling on Mobile, Vertical on Desktop) -->
+                <div class="w-full md:w-1/4 border-b md:border-b-0 md:border-r border-slate-800 flex md:flex-col overflow-x-auto md:overflow-y-auto bg-slate-950/40 divide-x md:divide-x-0 md:divide-y divide-slate-850 shrink-0 no-scrollbar">
+                    <button onclick="switchTemplateTab(1)" id="tab-1" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週一：臀部日</button>
+                    <button onclick="switchTemplateTab(2)" id="tab-2" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週二：背部姿勢</button>
+                    <button onclick="switchTemplateTab(3)" id="tab-3" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週三：臀凹陷</button>
+                    <button onclick="switchTemplateTab(4)" id="tab-4" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週四：恢復日</button>
+                    <button onclick="switchTemplateTab(5)" id="tab-5" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週五：下臀圓臀</button>
+                    <button onclick="switchTemplateTab(6)" id="tab-6" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週六：休整放鬆</button>
+                    <button onclick="switchTemplateTab(7)" id="tab-7" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週日：充電日</button>
                 </div>
 
                 <!-- Right panel: Editing Area -->
-                <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col justify-between" id="template-edit-container">
+                <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col justify-between min-h-0 bg-slate-900/40" id="template-edit-container">
 
-                    <div>
+                    <div class="space-y-4">
                         <!-- Day Theme Name Edit -->
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
-                            <div class="w-full sm:w-auto">
-                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">本日主題</label>
-                                <input type="text" id="template-day-name" class="bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-3 py-1.5 text-slate-100 font-bold text-lg w-full sm:w-80 outline-none transition-colors" placeholder="請輸入主題名稱">
+                        <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-slate-950/40 p-3 rounded-xl border border-slate-850">
+                            <div class="flex-1 min-w-0">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">本日課表主題標題</label>
+                                <input type="text" id="template-day-name" class="bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-3 py-1.5 text-slate-100 font-bold text-sm sm:text-base w-full outline-none transition-colors" placeholder="請輸入主題名稱">
                             </div>
-                            <button onclick="addExerciseToTemplate()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-1 transition-colors self-end sm:self-auto shadow-md">
+                            <button onclick="addExerciseToTemplate()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 transition-colors shadow-md shrink-0">
                                 <i class="fa-solid fa-plus"></i> 新增預設動作
                             </button>
                         </div>
 
                         <!-- Template Exercise List -->
-                        <div id="template-exercises-list" class="space-y-4">
+                        <div id="template-exercises-list" class="space-y-3">
                             <!-- Loaded via script -->
                         </div>
                     </div>
 
                     <!-- Actions Footer -->
-                    <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center">
-                        <button onclick="resetToDemoTemplates()" class="text-xs text-slate-500 hover:text-slate-300 underline transition-colors">
-                            重設回妳的專屬原廠課表
+                    <div class="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+                        <button onclick="resetToDemoTemplates()" class="text-[11px] text-slate-500 hover:text-slate-350 underline transition-colors order-2 sm:order-1">
+                            重設回妳的專屬原廠課表設定
                         </button>
-                        <div class="flex gap-2">
-                            <button onclick="closeTemplateModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm transition-colors">關閉</button>
-                            <button onclick="saveCurrentTemplateChanges()" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold rounded-xl text-sm transition-all shadow-lg">儲存變更</button>
+                        <div class="flex gap-2 w-full sm:w-auto order-1 sm:order-2 justify-end">
+                            <button onclick="closeTemplateModal()" class="flex-1 sm:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg text-xs transition-colors">關閉</button>
+                            <button onclick="saveCurrentTemplateChanges()" class="flex-1 sm:flex-none px-4 py-2 bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold rounded-lg text-xs transition-all shadow-lg shadow-brand-500/10">儲存變更</button>
                         </div>
                     </div>
 
@@ -370,8 +378,8 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full"></div>
+    <!-- TOAST NOTIFICATION CONTAINER (Adjusted width for iPhone SE / Narrow devices) -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full"></div>
 
 
     <!-- JAVASCRIPT CORE LOGIC -->
@@ -545,7 +553,7 @@
         const MOTIVATION_QUOTES = [
             "「慢慢做，把姿勢做對。一下高質量的動作，勝過十下借力、受傷的練習。」",
             "「上班坐 1～2 小時，起立走動 2 分鐘，對妳骨盆健康的功勞，勝過多做 100 下青蛙趴！」",
-            "「姿勢永遠優先於重量或次數。注意今天動作卡片底部的『重點提醒』喔！」",
+            "" + "「姿勢永遠優先於重量或次數。注意今天動作卡片底部的『重點提醒』喔！」",
             "「水滴石穿，持之以恆，妳的身體在每一個看似微小的動作中，都正在悄悄進化。」",
             "「最難的往往不是運動本身，而是穿上運動服、鋪好瑜珈墊的那個瞬間。」"
         ];
@@ -559,7 +567,6 @@
             const savedTemplates = localStorage.getItem(LOCAL_STORAGE_KEYS.TEMPLATES);
             if (savedTemplates) {
                 state.weeklyTemplates = JSON.parse(savedTemplates);
-                // Simple migration to ensure updated/restored keys exist
                 for (let key in MY_CUSTOM_TEMPLATES) {
                     if (!state.weeklyTemplates[key]) {
                         state.weeklyTemplates[key] = MY_CUSTOM_TEMPLATES[key];
@@ -609,7 +616,6 @@
             const chineseDateStr = todayDate.toLocaleDateString('zh-TW', options);
             document.getElementById('today-date-str').innerText = chineseDateStr;
 
-            // Build Walk Task
             const walkTask = {
                 id: "fixed-walk-task",
                 name: "🚶【辦公室必做】上班坐1~2小時，起立走動2分鐘",
@@ -626,18 +632,16 @@
                 const template = state.weeklyTemplates[dayOfWeek];
                 const dayName = template ? template.dayName : `星期${translateDayIndexToChinese(dayOfWeek)}`;
 
-                // Prepend walkTask to daily list
                 const exercisesList = template ? template.exercises.map(ex => ({
                     ...ex,
                     completed: false,
                     expanded: false
                 })) : [];
 
-                // Add the absolute priority task as index 0
                 exercisesList.unshift({
                     ...walkTask,
                     completed: false,
-                    expanded: true // Expanded by default so the user reads it immediately
+                    expanded: true 
                 });
 
                 state.dailyLogs[todayKey] = {
@@ -648,7 +652,6 @@
                 };
                 saveLogsToLocalStorage();
             } else {
-                // Ensure the walkTask is always injected even if not present in older logs
                 const log = state.dailyLogs[todayKey];
                 const hasWalkTask = log.exercises.some(ex => ex.id === "fixed-walk-task");
                 if (!hasWalkTask) {
@@ -729,45 +732,45 @@
                 const isWalkTask = (ex.id === "fixed-walk-task");
 
                 html += `
-                <div class="border transition-all duration-300 rounded-2xl p-4 md:p-5 shadow-md flex flex-col gap-4
+                <div class="border transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col gap-3 sm:gap-4
                     ${isWalkTask ? 'bg-gradient-to-br from-slate-900 to-teal-950/20' : 'bg-slate-900'}
                     ${isCompleted ? 'border-brand-500/30 opacity-75 bg-slate-900/40' : 'border-slate-800 hover:border-slate-700'}" id="card-${ex.id}">
 
-                    <!-- Top section of card -->
-                    <div class="flex items-center justify-between gap-3">
-                        <div class="flex items-center gap-3 md:gap-4 flex-1">
-                            <!-- Tap checkbox zone -->
-                            <button onclick="toggleExerciseComplete('${ex.id}')" class="w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isCompleted ? 'bg-brand-500 border-brand-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-slate-700 text-transparent hover:border-brand-500 bg-slate-950'}" aria-label="標記完成">
+                    <!-- Top section of card: Aligned top for multilines -->
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                            <!-- Tap checkbox zone - NEVER Squish on mobile -->
+                            <button onclick="toggleExerciseComplete('${ex.id}')" class="w-10 h-10 rounded-xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-brand-500 border-brand-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-slate-700 text-transparent hover:border-brand-500 bg-slate-950'}" aria-label="標記完成">
                                 <i class="fa-solid fa-check text-base font-bold ${isCompleted ? 'text-slate-950' : 'hover:text-brand-500/20'}"></i>
                             </button>
 
                             <!-- Title & Goal -->
-                            <div class="flex-1 min-w-0" onclick="toggleCardExpand('${ex.id}')">
-                                <h4 class="font-bold text-base md:text-lg select-none cursor-pointer flex items-center gap-2 truncate ${isCompleted ? 'line-through text-slate-500' : 'text-slate-200'}">
+                            <div class="flex-1 min-w-0 pt-0.5" onclick="toggleCardExpand('${ex.id}')">
+                                <h4 class="font-bold text-sm sm:text-base md:text-lg select-none cursor-pointer flex items-start gap-2 break-words leading-snug ${isCompleted ? 'line-through text-slate-500' : 'text-slate-200'}">
                                     ${ex.name}
                                 </h4>
-                                <span class="inline-block bg-slate-950 text-brand-400 font-semibold border border-slate-800 text-xs px-2.5 py-1 rounded-md mt-1">
+                                <span class="inline-block bg-slate-950 text-brand-400 font-bold border border-slate-850 text-[10px] sm:text-xs px-2.5 py-0.5 rounded-md mt-1.5 whitespace-nowrap">
                                     ${ex.target}
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Dropdown detail button -->
-                        <button onclick="toggleCardExpand('${ex.id}')" class="w-10 h-10 rounded-full hover:bg-slate-800/80 border border-transparent hover:border-slate-750 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-all">
+                        <!-- Dropdown detail button - NEVER Squish -->
+                        <button onclick="toggleCardExpand('${ex.id}')" class="w-10 h-10 rounded-full hover:bg-slate-800/80 border border-transparent hover:border-slate-750 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-all shrink-0">
                             <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isExpanded ? 'rotate-180 text-brand-500' : ''}"></i>
                         </button>
                     </div>
 
                     <!-- Collapsible Guidance -->
                     <div class="collapse-content ${isExpanded ? 'show' : ''}">
-                        <div class="pt-3 border-t border-slate-800/60 mt-2 space-y-4 text-sm">
+                        <div class="pt-3 border-t border-slate-800/60 mt-1 space-y-3 sm:space-y-4 text-xs sm:text-sm">
 
                             <!-- Steps list -->
                             ${ex.steps && ex.steps.length > 0 ? `
                                 <div>
-                                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📌 動作步驟與作法：</div>
-                                    <ol class="space-y-1.5 pl-5 list-decimal text-slate-300">
-                                        ${ex.steps.map(step => `<li class="leading-relaxed">${step}</li>`).join('')}
+                                    <div class="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📌 動作步驟與作法：</div>
+                                    <ol class="space-y-1.5 pl-4 list-decimal text-slate-300 leading-relaxed">
+                                        ${ex.steps.map(step => `<li class="break-words">${step}</li>`).join('')}
                                     </ol>
                                 </div>
                             ` : `
@@ -777,28 +780,28 @@
                             <!-- Warning Tips -->
                             ${ex.tips ? `
                                 <div class="bg-orange-500/10 border-l-4 border-orange-500 p-3 rounded-r-xl">
-                                    <div class="flex items-start gap-2.5">
+                                    <div class="flex items-start gap-2">
                                         <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5 shrink-0"></i>
-                                        <div>
-                                            <span class="text-xs font-bold text-orange-400 block mb-0.5">⚠️ 姿勢注意重點提醒：</span>
-                                            <p class="text-slate-300 font-semibold leading-relaxed">${ex.tips}</p>
+                                        <div class="min-w-0">
+                                            <span class="text-[10px] sm:text-xs font-bold text-orange-400 block mb-0.5">⚠️ 姿勢注意重點提醒：</span>
+                                            <p class="text-slate-200 font-semibold leading-relaxed break-words">${ex.tips}</p>
                                         </div>
                                     </div>
                                 </div>
                             ` : ''}
 
                             <!-- Action bar inside expanded card -->
-                            <div class="flex justify-between items-center pt-2">
+                            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 pt-2 border-t border-slate-800/40">
                                 ${isWalkTask ? `
-                                    <span class="text-[11px] text-teal-400 font-semibold">
+                                    <span class="text-[10px] sm:text-[11px] text-teal-400 font-semibold">
                                         ★ 每天雷打不動的最優先要務
                                     </span>
                                 ` : `
-                                    <button onclick="deleteExerciseFromToday('${ex.id}')" class="text-xs text-rose-500 hover:text-rose-400 flex items-center gap-1 transition-colors">
+                                    <button onclick="deleteExerciseFromToday('${ex.id}')" class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-400 flex items-center justify-start gap-1 transition-colors py-1">
                                         <i class="fa-solid fa-trash-can"></i> 從今天排除此動作
                                     </button>
                                 `}
-                                <span class="text-[11px] text-slate-500">
+                                <span class="text-[9px] sm:text-[11px] text-slate-500 text-right sm:text-left">
                                     此為今日彈性清單，修改預設請點選「設定」
                                 </span>
                             </div>
@@ -960,11 +963,11 @@
                 icon = '<i class="fa-solid fa-triangle-exclamation text-orange-500"></i>';
             }
 
-            toast.className = `flex items-center gap-3 border p-4 rounded-xl shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ${bgClass}`;
+            toast.className = `flex items-center gap-2.5 border p-3.5 rounded-xl shadow-lg transform translate-y-2 opacity-0 transition-all duration-350 ${bgClass}`;
             toast.innerHTML = `
-                <div class="text-base">${icon}</div>
-                <div class="text-xs font-semibold flex-1 leading-relaxed">${message}</div>
-                <button class="text-slate-500 hover:text-slate-350" onclick="this.parentElement.remove()">
+                <div class="text-sm shrink-0">${icon}</div>
+                <div class="text-[11px] sm:text-xs font-semibold flex-1 leading-relaxed break-words">${message}</div>
+                <button class="text-slate-500 hover:text-slate-350 shrink-0 p-1" onclick="this.parentElement.remove()">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             `;
@@ -977,8 +980,8 @@
 
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 3500);
+                setTimeout(() => toast.remove(), 350);
+            }, 4000);
         }
 
         // --- 7. CELEBRATION EFFECT (CONFETTI) ---
@@ -995,9 +998,9 @@
 
                 piece.style.left = `${Math.random() * 100}%`;
                 piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-                piece.style.animationDelay = `${Math.random() * 2}s`;
-                piece.style.width = `${Math.random() * 8 + 6}px`;
-                piece.style.height = `${Math.random() * 12 + 6}px`;
+                piece.style.animationDelay = `${Math.random() * 1.5}s`;
+                piece.style.width = `${Math.random() * 6 + 5}px`;
+                piece.style.height = `${Math.random() * 10 + 5}px`;
                 piece.style.transform = `rotate(${Math.random() * 360}deg)`;
 
                 container.appendChild(piece);
@@ -1005,7 +1008,7 @@
 
             setTimeout(() => {
                 container.innerHTML = '';
-            }, 6000);
+            }, 5500);
         }
 
         // --- 8. MINI CALENDAR SYSTEM ---
@@ -1026,7 +1029,7 @@
 
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
-                emptyCell.className = "text-center text-slate-800 text-xs py-2";
+                emptyCell.className = "text-center text-slate-800 text-[10px] sm:text-xs py-2";
                 emptyCell.innerText = "-";
                 container.appendChild(emptyCell);
             }
@@ -1064,7 +1067,7 @@
                 }
 
                 const dayCell = document.createElement('div');
-                dayCell.className = `w-full aspect-square flex items-center justify-center text-xs rounded-lg transition-all cursor-pointer ${dayColorClass} ${ringClass}`;
+                dayCell.className = `w-full aspect-square flex items-center justify-center text-[10px] sm:text-xs rounded-lg transition-all cursor-pointer ${dayColorClass} ${ringClass}`;
                 dayCell.innerText = day;
                 dayCell.title = dayLog ? `${dayLog.dayName} (${dayLog.exercises.filter(e => e.completed).length}/${dayLog.exercises.length} 完成)` : `無運動數據`;
 
@@ -1142,12 +1145,12 @@
             activeDayTab = dayNum;
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn flex-1 md:flex-none text-left px-4 md:px-5 py-3 md:py-4 font-semibold text-xs md:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30";
+                btn.className = "tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap";
             });
 
             const activeBtn = document.getElementById(`tab-${dayNum}`);
             if (activeBtn) {
-                activeBtn.className = "tab-btn flex-1 md:flex-none text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs md:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-brand-500 text-brand-500 bg-slate-900";
+                activeBtn.className = "tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-extrabold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-brand-500 text-brand-500 bg-slate-900 whitespace-nowrap";
             }
 
             renderTemplateEditArea();
@@ -1176,29 +1179,29 @@
                 exCard.innerHTML = `
                     <div class="flex items-center gap-2 justify-between">
                         <span class="text-xs font-bold text-brand-500 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded">動作 ${idx + 1}</span>
-                        <button onclick="removeExerciseFromTemplate(${idx})" class="text-rose-400 hover:text-rose-500 text-xs flex items-center gap-0.5">
-                            <i class="fa-solid fa-trash-can"></i> 移除
+                        <button onclick="removeExerciseFromTemplate(${idx})" class="text-rose-400 hover:text-rose-500 text-xs flex items-center gap-1 py-1">
+                            <i class="fa-solid fa-trash-can"></i> 移除動作
                         </button>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">動作名稱 *</label>
+                            <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase mb-1">動作名稱 *</label>
                             <input type="text" oninput="updateTemplateField(${idx}, 'name', this.value)" value="${ex.name}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="動作名稱" required>
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">設定目標 (組數/次數) *</label>
+                            <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase mb-1">設定目標 (組數/次數) *</label>
                             <input type="text" oninput="updateTemplateField(${idx}, 'target', this.value)" value="${ex.target}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="例如：20下 * 3組" required>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">作法步驟 (每行一條步驟)</label>
+                        <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase mb-1">作法步驟 (每行一條步驟)</label>
                         <textarea oninput="updateTemplateSteps(${idx}, this.value)" rows="3" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-1.5 text-slate-200 text-xs outline-none leading-relaxed" placeholder="第一步...&#10;第二步...">${ex.steps ? ex.steps.join('\n') : ''}</textarea>
                     </div>
 
                     <div>
-                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">⚠️ 動作姿勢關鍵字重點提醒</label>
+                        <label class="block text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase mb-1">⚠️ 動作姿勢關鍵字重點提醒 (亮橘色框提示)</label>
                         <input type="text" oninput="updateTemplateField(${idx}, 'tips', this.value)" value="${ex.tips || ''}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="例如：千萬不要拱腰 / 臀部一定要推到底">
                     </div>
                 `;
@@ -1260,7 +1263,6 @@
                         expanded: false
                     }));
 
-                    // Keep walk task at top
                     const walkTask = todayLog.exercises.find(ex => ex.id === "fixed-walk-task");
                     if (walkTask) {
                         newExercises.unshift(walkTask);
