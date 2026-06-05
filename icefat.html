@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💪 每日運動追蹤與姿勢提醒器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981', // 翡翠綠 (代表活力、動力)
+                            600: '#059669',
+                            700: '#047857',
+                        },
+                        warn: {
+                            500: '#f97316', // 亮橘色 (姿勢警示)
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for fitness icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Smooth Custom Transitions */
+        .collapse-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.2s ease-out;
+            opacity: 0;
+        }
+        .collapse-content.show {
+            max-height: 600px;
+            opacity: 1;
+            transition: max-height 0.4s ease-in, opacity 0.3s ease-in;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+        /* Confetti animation */
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            top: 0;
+            opacity: 0;
+            animation: fall 3s infinite ease-out;
+        }
+        @keyframes fall {
+            0% { top: -20px; opacity: 1; transform: translateX(0) rotate(0deg); }
+            100% { top: 90%; opacity: 0; transform: translateX(100px) rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans selection:bg-brand-500 selection:text-slate-900 transition-colors duration-300">
+
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
+
+    <!-- MAIN CONTAINER (Perfect for iPad & Desktop grid) -->
+    <div class="max-w-7xl mx-auto px-4 py-6 md:py-10">
+
+        <!-- HEADER -->
+        <header class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 bg-slate-900/60 backdrop-blur border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 bg-brand-500/10 text-brand-500 rounded-2xl flex items-center justify-center text-2xl border border-brand-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                    <i class="fa-solid fa-dumbbell animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">每日動能追蹤</h1>
+                    <p class="text-sm text-slate-400 mt-1">規劃、姿勢、紀錄 — 每天進步一點點</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Streak Badge -->
+                <div class="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 text-orange-400 px-4 py-2.5 rounded-xl flex items-center gap-2 font-bold shadow-lg">
+                    <i class="fa-solid fa-fire text-lg text-orange-500 animate-bounce"></i>
+                    <div>
+                        <span class="text-xs text-orange-400/75 block leading-none">連續達成</span>
+                        <span class="text-lg" id="streak-counter">0</span> <span class="text-xs">天</span>
+                    </div>
+                </div>
+                <!-- Settings Trigger Button -->
+                <button onclick="openTemplateModal()" class="bg-slate-800 hover:bg-slate-700 hover:text-brand-500 text-slate-200 border border-slate-700 hover:border-brand-500/50 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md">
+                    <i class="fa-solid fa-calendar-gear"></i>
+                    <span class="font-medium hidden sm:inline">每週課表設定</span>
+                    <span class="font-medium sm:hidden">設定</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- GOLDEN RULE NOTIFICATION (Pinned at top of dashboard) -->
+        <div class="bg-gradient-to-r from-teal-500/15 to-brand-500/10 border border-brand-500/30 rounded-2xl p-5 mb-8 shadow-lg relative overflow-hidden">
+            <div class="absolute right-0 top-0 translate-x-4 -translate-y-4 text-brand-500/5 text-9xl pointer-events-none select-none font-bold">
+                🚶
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div class="w-12 h-12 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-xl shrink-0 border border-brand-500/20">
+                    <i class="fa-solid fa-person-walking animate-bounce"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-100 text-sm md:text-base flex items-center gap-2">
+                        🌟 每日最高優先級黃金任務
+                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">核心核心！</span>
+                    </h4>
+                    <p class="text-slate-300 text-xs md:text-sm mt-1 leading-relaxed">
+                        <strong class="text-brand-400 font-extrabold text-sm md:text-base">「 上班坐 1～2 小時，站起來走 2 分鐘。」</strong>
+                        這件事對妳骨盆血流與下肢健康的關鍵程度，<span class="underline decoration-amber-500 decoration-2 underline-offset-2 text-slate-200 font-bold">甚至遠遠超過多做 100 下青蛙趴！</span> 請務必在下方打勾標記喔！
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LAYOUT GRID (Responsive Columns for Desktop vs iPad/Mobile) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- LEFT & CENTER: TODAY'S WORKOUTS (2/3 width on desktop/tablet) -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Date & Routine Header -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 text-brand-500 font-semibold text-sm tracking-wider uppercase">
+                                <i class="fa-regular fa-calendar-days"></i>
+                                <span id="today-date-str">2026年06月05日 星期五</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-100 mt-1 flex items-center gap-2" id="today-routine-title">
+                                週五：下臀＋圓臀日
+                            </h2>
+                        </div>
+                        <!-- Daily Progress Indicator -->
+                        <div class="flex items-center gap-3 bg-slate-950/60 border border-slate-800/80 px-4 py-3 rounded-xl min-w-[140px]">
+                            <div class="flex-1">
+                                <div class="text-xs text-slate-400">完成進度</div>
+                                <div class="text-xl font-extrabold text-brand-500" id="progress-percentage">0%</div>
+                            </div>
+                            <div class="w-10 h-10 rounded-full border-4 border-slate-800 flex items-center justify-center relative overflow-hidden">
+                                <div id="progress-spinner" class="absolute inset-0 border-4 border-brand-500 transition-all duration-300" style="clip-path: polygon(50% 50%, 50% 0%, 50% 0%)"></div>
+                                <i class="fa-solid fa-check text-xs text-brand-500" id="progress-check-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-2.5 rounded-full mt-4 overflow-hidden">
+                        <div id="progress-bar-fill" class="bg-gradient-to-r from-brand-500 to-teal-400 h-full rounded-full w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+
+                <!-- Active Workouts List -->
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold flex items-center gap-2 text-slate-300">
+                            <i class="fa-solid fa-list-check text-brand-500"></i>
+                            今日動作清單
+                        </h3>
+                        <!-- Add custom exercise for today (Option C) -->
+                        <button onclick="openQuickAddModal()" class="text-xs bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5 transition-all duration-150">
+                            <i class="fa-solid fa-plus"></i>
+                            新增今日臨時項目
+                        </button>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden bg-slate-900/50 border border-dashed border-slate-800 rounded-2xl p-10 text-center">
+                        <div class="w-16 h-16 bg-slate-800/80 text-slate-500 rounded-full flex items-center justify-center text-xl mx-auto mb-4">
+                            <i class="fa-solid fa-couch"></i>
+                        </div>
+                        <h4 class="text-slate-300 font-bold mb-1">今天安排休息嗎？</h4>
+                        <p class="text-sm text-slate-500 max-w-sm mx-auto mb-4">今天每週預設課表沒有安排項目。您可以享受休息日，或是點擊上方新增臨時項目動動身體！</p>
+                        <button onclick="openQuickAddModal()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm transition-colors shadow-lg">
+                            <i class="fa-solid fa-plus mr-1"></i> 新增今天運動
+                        </button>
+                    </div>
+
+                    <!-- Workout Cards Grid -->
+                    <div id="workout-list" class="space-y-4">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: CALENDAR & MOTIVATION -->
+            <div class="space-y-6">
+                <!-- Mini Calendar Section -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-base font-bold flex items-center gap-2 text-slate-200">
+                            <i class="fa-solid fa-calendar-check text-brand-500"></i>
+                            本月努力軌跡
+                        </h3>
+                        <span id="calendar-month-name" class="text-xs text-slate-400 font-medium bg-slate-800 px-2.5 py-1 rounded-md">6月</span>
+                    </div>
+
+                    <!-- Calendar Grid Header -->
+                    <div class="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 font-bold mb-2">
+                        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+                    </div>
+                    <!-- Calendar Days Grid -->
+                    <div id="calendar-days" class="grid grid-cols-7 gap-1 text-center">
+                        <!-- Loaded dynamically via JS -->
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-800 flex flex-wrap gap-x-4 gap-y-2 text-xs text-slate-400">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-500 inline-block shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
+                            <span>完全達成</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+                            <span>部分達成</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500/50 inline-block"></span>
+                            <span>未達標</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-slate-800 inline-block"></span>
+                            <span>休息日/無項目</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Motivation & Quick Tips Card -->
+                <div class="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800 rounded-2xl p-6 shadow-lg relative overflow-hidden">
+                    <div class="absolute -right-4 -bottom-4 text-slate-800/20 text-8xl pointer-events-none font-bold">
+                        💪
+                    </div>
+                    <h3 class="text-base font-bold text-slate-200 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-quote-left text-brand-500"></i>
+                        今日健康語錄
+                    </h3>
+                    <p id="motivational-quote" class="text-sm text-slate-400 leading-relaxed italic">
+                        「慢慢做，把姿勢做對。一下高質量的動作，勝過十下借力、受傷的練習。」
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MODAL: WORKOUT QUICK ADD (TODAY ONLY) -->
+    <div id="quick-add-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-plus text-brand-500"></i>
+                    新增今日臨時運動項目
+                </h3>
+                <button onclick="closeQuickAddModal()" class="text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="quick-add-form" onsubmit="handleQuickAdd(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">運動名稱 *</label>
+                    <input type="text" id="add-ex-name" required placeholder="例如：開合跳、棒式、波比跳" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">設定目標 *</label>
+                    <input type="text" id="add-ex-target" required placeholder="例如：20下 * 3組、維持1分鐘" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">作法步驟 (每行一個步驟，可不填)</label>
+                    <textarea id="add-ex-steps" rows="3" placeholder="第一步...&#10;第二步...&#10;第三步..." class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2 text-slate-100 outline-none text-sm transition-colors"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">⚠️ 重點提醒 (重要姿勢警告，可不填)</label>
+                    <input type="text" id="add-ex-tips" placeholder="例如：背部打直、膝蓋不內夾" class="w-full bg-slate-950 border border-slate-850 focus:border-brand-500 rounded-xl px-4 py-2.5 text-slate-100 outline-none text-sm transition-colors">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeQuickAddModal()" class="px-5 py-2.5 rounded-xl border border-slate-850 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 transition-colors text-sm">取消</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold rounded-xl transition-colors text-sm">新增至今日課表</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- MODAL: WEEKLY TEMPLATE SETTINGS -->
+    <div id="template-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-40 flex items-center justify-center p-2 md:p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-5xl h-[90vh] md:h-[80vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+            <!-- Modal Header -->
+            <div class="p-4 md:p-6 border-b border-slate-800 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-gear text-brand-500"></i>
+                        每週預設課表與動作細節設定
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">設定好後，每天過期重置會自動套用該星期對應的預設課表</p>
+                </div>
+                <button onclick="closeTemplateModal()" class="text-slate-400 hover:text-slate-200 p-2">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content - Split layout -->
+            <div class="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+                <!-- Left panel: Day tabs -->
+                <div class="w-full md:w-1/4 border-b md:border-b-0 md:border-r border-slate-800 flex md:flex-col overflow-x-auto md:overflow-y-auto bg-slate-950/40 divide-x md:divide-x-0 md:divide-y divide-slate-850 shrink-0">
+                    <button onclick="switchTemplateTab(1)" id="tab-1" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週一：臀部重點日</button>
+                    <button onclick="switchTemplateTab(2)" id="tab-2" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週二</button>
+                    <button onclick="switchTemplateTab(3)" id="tab-3" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週三</button>
+                    <button onclick="switchTemplateTab(4)" id="tab-4" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週四</button>
+                    <button onclick="switchTemplateTab(5)" id="tab-5" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週五</button>
+                    <button onclick="switchTemplateTab(6)" id="tab-6" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週六</button>
+                    <button onclick="switchTemplateTab(7)" id="tab-7" class="tab-btn flex-1 md:flex-none text-left px-5 py-4 font-semibold text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30">週日</button>
+                </div>
+
+                <!-- Right panel: Editing Area -->
+                <div class="flex-1 p-4 md:p-6 overflow-y-auto flex flex-col justify-between" id="template-edit-container">
+
+                    <div>
+                        <!-- Day Theme Name Edit -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                            <div class="w-full sm:w-auto">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">本日主題</label>
+                                <input type="text" id="template-day-name" class="bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-lg px-3 py-1.5 text-slate-100 font-bold text-lg w-full sm:w-80 outline-none transition-colors" placeholder="請輸入主題名稱">
+                            </div>
+                            <button onclick="addExerciseToTemplate()" class="bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-1 transition-colors self-end sm:self-auto shadow-md">
+                                <i class="fa-solid fa-plus"></i> 新增預設動作
+                            </button>
+                        </div>
+
+                        <!-- Template Exercise List -->
+                        <div id="template-exercises-list" class="space-y-4">
+                            <!-- Loaded via script -->
+                        </div>
+                    </div>
+
+                    <!-- Actions Footer -->
+                    <div class="mt-8 pt-4 border-t border-slate-800 flex justify-between items-center">
+                        <button onclick="resetToDemoTemplates()" class="text-xs text-slate-500 hover:text-slate-300 underline transition-colors">
+                            重設回妳的專屬原廠課表
+                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="closeTemplateModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-sm transition-colors">關閉</button>
+                            <button onclick="saveCurrentTemplateChanges()" class="px-5 py-2 bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold rounded-xl text-sm transition-all shadow-lg">儲存變更</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full"></div>
+
+
+    <!-- JAVASCRIPT CORE LOGIC -->
+    <script>
+        // --- 1. CONFIGURATION & STATE ---
+        const LOCAL_STORAGE_KEYS = {
+            TEMPLATES: 'fitness_tracker_templates',
+            DAILY_LOGS: 'fitness_tracker_daily_logs',
+            STREAK: 'fitness_tracker_streak',
+            LAST_ACTIVE: 'fitness_tracker_last_active'
+        };
+
+        let activeDayTab = 1;
+        let state = {
+            weeklyTemplates: {},
+            dailyLogs: {},
+            streak: 0,
+            lastActiveDate: ""
+        };
+
+        // Preloaded Personalized Templates (Mon to Sun) with added safety warnings
+        const MY_CUSTOM_TEMPLATES = {
+            1: {
+                dayName: "週一：臀部重點日 (30分鐘)",
+                exercises: [
+                    {
+                        id: "ex-1-1",
+                        name: "彈力帶臀橋",
+                        target: "20下 * 3組",
+                        steps: ["彈力帶套在膝蓋上方", "腳與肩同寬", "臀部向上推", "最高點夾屁股2秒", "慢慢放下"],
+                        tips: "不要用腰頂！保持核心收緊，用雙腳後跟用力踩地。"
+                    },
+                    {
+                        id: "ex-1-2",
+                        name: "青蛙趴",
+                        target: "30下 * 3組",
+                        steps: ["腳底互碰", "膝蓋打開", "臀部向上推", "最高點停1秒", "慢慢放下"],
+                        tips: "雙腳掌用力對貼。這能更深層刺激臀大肌下緣，推起時不要仰頭過度，視線看前下方。"
+                    },
+                    {
+                        id: "ex-1-3",
+                        name: "後抬腿",
+                        target: "左右各20下 * 3組",
+                        steps: ["四足跪姿", "腳底朝天", "抬到屁股有感"],
+                        tips: "不要凹腰！利用臀大肌的力量將大腿往上送，而不是靠腰椎晃動。"
+                    }
+                ]
+            },
+            2: {
+                dayName: "週二：背＋姿勢 (30分鐘)",
+                exercises: [
+                    {
+                        id: "ex-2-1",
+                        name: "毛巾練背",
+                        target: "30下 * 3組",
+                        steps: ["雙手握毛巾兩側，毛巾寬度略寬於肩膀", "高舉毛巾與肩膀平行", "將毛巾高舉過頭", "開胸再用背部肌肉的力量將毛巾下拉"],
+                        tips: "肩胛沉肩與後收、收緊核心保持腰背挺直。下拉時感受兩側背闊肌往中間夾緊，不要聳肩！"
+                    },
+                    {
+                        id: "ex-2-2",
+                        name: "超人式",
+                        target: "15下 * 3組",
+                        steps: ["趴著雙腿伸直，雙臂向前伸直（手心朝下）", "頸椎與脊椎在一直線上", "雙手雙腿同時向上抬起", "最高點停3 到 5 秒", "慢慢放回地面"],
+                        tips: "重要！頸部要保持自然中立，視線朝下看著地板，千萬不要勉強仰頭，避免頸椎過度擠壓受傷！利用背和臀大肌慢慢帶起身體，而不是用力甩上去。"
+                    }
+                ]
+            },
+            3: {
+                dayName: "週三：臀凹陷改善日 (30分鐘)",
+                exercises: [
+                    {
+                        id: "ex-3-1",
+                        name: "保加利亞分腿蹲",
+                        target: "左右12下 * 3組",
+                        steps: ["後腳放椅子", "身體微前傾", "重心在前腳腳跟", "起來時屁股出力"],
+                        tips: "重要！前腳膝蓋不能內夾（要對準腳掌方向），重心在腳跟，下蹲時感受前腳臀部的拉伸。後腳只是借力平衡，不要用力推。"
+                    },
+                    {
+                        id: "ex-3-2",
+                        name: "彈力帶側走",
+                        target: "20步 * 3組",
+                        steps: ["彈力帶套膝蓋上方", "半蹲", "左右慢慢走"],
+                        tips: "重要！膝蓋要對準腳尖（絕對不能內夾塌陷），上半身保持微前傾，全程核心收緊，步伐要穩、要慢，感受臀中肌（臀側）的酸脹感！"
+                    },
+                    {
+                        id: "ex-3-3",
+                        name: "青蛙趴",
+                        target: "30下 * 3組",
+                        steps: ["腳底互碰", "膝蓋打開", "臀部向上推", "最高點停1秒", "慢慢放下"],
+                        tips: "專注於髖部完全打開，上推至頂部時臀肌用力夾緊，感受骨盆兩側的收縮感。"
+                    }
+                ]
+            },
+            4: {
+                dayName: "週四：恢復日 (20分鐘)",
+                exercises: [
+                    {
+                        id: "ex-4-1",
+                        name: "平板支撐",
+                        target: "30秒 * 3組",
+                        steps: ["手肘與肩膀垂直", "頭部與頸部保持中立", "身體成一直線收緊腹部，臀部夾緊", "保持正常呼吸"],
+                        tips: "重要！手肘用力推地、不要塌肩。腹部往上收（想像肚臍貼脊椎），骨盆微後傾防止腰部下塌疼痛。如果腰酸，表示腰部代償了，請立刻休息！"
+                    },
+                    {
+                        id: "ex-4-2",
+                        name: "超人式",
+                        target: "15下 * 3組",
+                        steps: ["趴著雙腿伸直，雙臂向前伸直（手心朝下）", "頸椎與脊椎在一直線上", "雙手雙腿同時向上抬起", "最高點停3 到 5 秒", "慢慢放回地面"],
+                        tips: "頸部放鬆，起伏要慢。在最高點停留時專注於背肌、臀肌、後側大腿的靜態維持張力。"
+                    },
+                    {
+                        id: "ex-4-3",
+                        name: "拉筋",
+                        target: "全身溫和拉伸 5~10 分鐘",
+                        steps: ["1. 貓牛式放鬆腰椎 10 次", "2. 嬰兒式放鬆背部與下腰 2 分鐘", "3. 鴿子式拉伸臀側（左右各停留 1 分鐘）", "4. 大腿後側與髂腰肌（前胯）溫和伸展"],
+                        tips: "伸展時配合深長呼吸，不要憋氣，拉到微酸感即可，絕對不要勉強拉扯到疼痛！"
+                    }
+                ]
+            },
+            5: {
+                dayName: "週五：下臀＋圓臀日 (30分鐘)",
+                exercises: [
+                    {
+                        id: "ex-5-1",
+                        name: "彈力帶臀橋",
+                        target: "20下 * 3組",
+                        steps: ["彈力帶套在膝蓋上方", "腳與肩同寬", "臀部向上推", "最高點夾屁股2秒", "慢慢放下"],
+                        tips: "不要用腰頂！注意大腿與膝蓋頂著彈力帶，不要往內收，保持核心與肋骨收緊，不要過度挺胸。"
+                    },
+                    {
+                        id: "ex-5-2",
+                        name: "後台腿",
+                        target: "左右各20下 * 3組",
+                        steps: ["四足跪姿", "腳底朝天", "抬到屁股有感"],
+                        tips: "不要凹腰。雙手用力推地，保持肩膀穩定，將精神集中在臀肌的頂峰收縮。"
+                    },
+                    {
+                        id: "ex-5-3",
+                        name: "深蹲＋彈力帶",
+                        target: "15下 * 3組",
+                        steps: ["屁股往後坐", "膝蓋往外推", "起來夾屁股"],
+                        tips: "彈力帶會往內拉膝蓋，所以雙腳落地一定要踩穩，膝蓋用力向外頂對抗彈力帶。重心在腳跟，挺胸不駝背，起身時臀部往前推並用力夾緊。"
+                    },
+                    {
+                        id: "ex-5-4",
+                        name: "青蛙趴",
+                        target: "30下 * 3組",
+                        steps: ["腳底互碰", "膝蓋打開", "臀部向上推", "最高點停1秒", "慢慢放下"],
+                        tips: "動作全程保持緩慢且受控，不要用反彈力。將專注度放到大腿後內側和下臀的收緊上。"
+                    }
+                ]
+            },
+            6: {
+                dayName: "週六：週末輕鬆活動與修復拉伸",
+                exercises: [
+                    {
+                        id: "ex-6-1",
+                        name: "滾筒泡沫軸按摩 / 自主深層放鬆",
+                        target: "全身放鬆 15~20 分鐘",
+                        steps: ["1. 用滾筒緩慢滾壓大腿外側（髂脛束）與大腿前側", "2. 坐在滾筒上，偏向一側滾壓臀大肌、臀中肌", "3. 滾壓上背部胸椎，雙手抱頭開胸"],
+                        tips: "週末給予肌肉充分的修復是翹臀長線條的關鍵期喔！"
+                    }
+                ]
+            },
+            7: {
+                dayName: "週日：週末休整與充電日",
+                exercises: [] // Resting day
+            }
+        };
+
+        const MOTIVATION_QUOTES = [
+            "「慢慢做，把姿勢做對。一下高質量的動作，勝過十下借力、受傷的練習。」",
+            "「上班坐 1～2 小時，起立走動 2 分鐘，對妳骨盆健康的功勞，勝過多做 100 下青蛙趴！」",
+            "「姿勢永遠優先於重量或次數。注意今天動作卡片底部的『重點提醒』喔！」",
+            "「水滴石穿，持之以恆，妳的身體在每一個看似微小的動作中，都正在悄悄進化。」",
+            "「最難的往往不是運動本身，而是穿上運動服、鋪好瑜珈墊的那個瞬間。」"
+        ];
+
+        // --- 2. INITIALIZATION ---
+        window.addEventListener('load', () => {
+            initApp();
+        });
+
+        function initApp() {
+            const savedTemplates = localStorage.getItem(LOCAL_STORAGE_KEYS.TEMPLATES);
+            if (savedTemplates) {
+                state.weeklyTemplates = JSON.parse(savedTemplates);
+                // Simple migration to ensure updated/restored keys exist
+                for (let key in MY_CUSTOM_TEMPLATES) {
+                    if (!state.weeklyTemplates[key]) {
+                        state.weeklyTemplates[key] = MY_CUSTOM_TEMPLATES[key];
+                    }
+                }
+            } else {
+                state.weeklyTemplates = JSON.parse(JSON.stringify(MY_CUSTOM_TEMPLATES));
+                localStorage.setItem(LOCAL_STORAGE_KEYS.TEMPLATES, JSON.stringify(state.weeklyTemplates));
+            }
+
+            const savedLogs = localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_LOGS);
+            if (savedLogs) {
+                state.dailyLogs = JSON.parse(savedLogs);
+            } else {
+                state.dailyLogs = {};
+                localStorage.setItem(LOCAL_STORAGE_KEYS.DAILY_LOGS, JSON.stringify(state.dailyLogs));
+            }
+
+            state.streak = parseInt(localStorage.getItem(LOCAL_STORAGE_KEYS.STREAK)) || 0;
+            state.lastActiveDate = localStorage.getItem(LOCAL_STORAGE_KEYS.LAST_ACTIVE) || "";
+
+            setupTodayWorkout();
+            updateUI();
+            setRandomQuote();
+        }
+
+        // --- 3. CORE LOGIC: SETUP TODAY'S LOG ---
+        function getTodayDateString() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function getDayOfWeekIndex(date) {
+            const day = date.getDay();
+            return day === 0 ? 7 : day;
+        }
+
+        function setupTodayWorkout() {
+            const todayKey = getTodayDateString();
+            const todayDate = new Date();
+            const dayOfWeek = getDayOfWeekIndex(todayDate);
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            const chineseDateStr = todayDate.toLocaleDateString('zh-TW', options);
+            document.getElementById('today-date-str').innerText = chineseDateStr;
+
+            // Build Walk Task
+            const walkTask = {
+                id: "fixed-walk-task",
+                name: "🚶【辦公室必做】上班坐1~2小時，起立走動2分鐘",
+                target: "整天不間斷提醒執行",
+                steps: [
+                    "每當連續專注上班或久坐滿 1 至 2 小時",
+                    "強迫自己起立 2 分鐘（例如去倒水、去洗手間、拉伸胯部）",
+                    "回座位時深呼吸、調整良好坐姿"
+                ],
+                tips: "這件事對妳的健康影響甚至超過青蛙趴！可有效防止骨盆充血堵塞、預防臀肌失憶與下垂。"
+            };
+
+            if (!state.dailyLogs[todayKey]) {
+                const template = state.weeklyTemplates[dayOfWeek];
+                const dayName = template ? template.dayName : `星期${translateDayIndexToChinese(dayOfWeek)}`;
+
+                // Prepend walkTask to daily list
+                const exercisesList = template ? template.exercises.map(ex => ({
+                    ...ex,
+                    completed: false,
+                    expanded: false
+                })) : [];
+
+                // Add the absolute priority task as index 0
+                exercisesList.unshift({
+                    ...walkTask,
+                    completed: false,
+                    expanded: true // Expanded by default so the user reads it immediately
+                });
+
+                state.dailyLogs[todayKey] = {
+                    dayName: dayName,
+                    dayOfWeek: dayOfWeek,
+                    exercises: exercisesList,
+                    completed: false
+                };
+                saveLogsToLocalStorage();
+            } else {
+                // Ensure the walkTask is always injected even if not present in older logs
+                const log = state.dailyLogs[todayKey];
+                const hasWalkTask = log.exercises.some(ex => ex.id === "fixed-walk-task");
+                if (!hasWalkTask) {
+                    log.exercises.unshift({
+                        ...walkTask,
+                        completed: false,
+                        expanded: true
+                    });
+                    saveLogsToLocalStorage();
+                }
+            }
+
+            validateStreak(todayKey);
+        }
+
+        function validateStreak(todayKey) {
+            if (state.lastActiveDate && state.lastActiveDate !== todayKey) {
+                const today = new Date(todayKey);
+                const lastActive = new Date(state.lastActiveDate);
+                const diffTime = Math.abs(today - lastActive);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 1) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayKey = yesterday.toISOString().split('T')[0];
+                    const yesterdayLog = state.dailyLogs[yesterdayKey];
+
+                    if (!yesterdayLog || !yesterdayLog.completed) {
+                        state.streak = 0;
+                        localStorage.setItem(LOCAL_STORAGE_KEYS.STREAK, state.streak);
+                    }
+                }
+            }
+        }
+
+        function saveLogsToLocalStorage() {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.DAILY_LOGS, JSON.stringify(state.dailyLogs));
+        }
+
+        function translateDayIndexToChinese(index) {
+            const mapping = { 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六", 7: "日" };
+            return mapping[index] || "";
+        }
+
+        // --- 4. RENDER UI ---
+        function updateUI() {
+            const todayKey = getTodayDateString();
+            const todayLog = state.dailyLogs[todayKey];
+
+            document.getElementById('today-routine-title').innerHTML = `
+                <i class="fa-solid fa-flag-checkered text-brand-500 mr-1"></i>
+                ${todayLog.dayName}
+            `;
+            document.getElementById('streak-counter').innerText = state.streak;
+
+            renderWorkoutList(todayLog.exercises);
+            updateProgress(todayLog);
+            renderCalendar();
+        }
+
+        function renderWorkoutList(exercises) {
+            const listContainer = document.getElementById('workout-list');
+            const emptyState = document.getElementById('empty-state');
+
+            if (!exercises || exercises.length === 0) {
+                listContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            let html = '';
+
+            exercises.forEach((ex, index) => {
+                const isCompleted = ex.completed;
+                const isExpanded = ex.expanded || false;
+                const isWalkTask = (ex.id === "fixed-walk-task");
+
+                html += `
+                <div class="border transition-all duration-300 rounded-2xl p-4 md:p-5 shadow-md flex flex-col gap-4
+                    ${isWalkTask ? 'bg-gradient-to-br from-slate-900 to-teal-950/20' : 'bg-slate-900'}
+                    ${isCompleted ? 'border-brand-500/30 opacity-75 bg-slate-900/40' : 'border-slate-800 hover:border-slate-700'}" id="card-${ex.id}">
+
+                    <!-- Top section of card -->
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 md:gap-4 flex-1">
+                            <!-- Tap checkbox zone -->
+                            <button onclick="toggleExerciseComplete('${ex.id}')" class="w-10 h-10 rounded-xl border flex items-center justify-center transition-all ${isCompleted ? 'bg-brand-500 border-brand-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-slate-700 text-transparent hover:border-brand-500 bg-slate-950'}" aria-label="標記完成">
+                                <i class="fa-solid fa-check text-base font-bold ${isCompleted ? 'text-slate-950' : 'hover:text-brand-500/20'}"></i>
+                            </button>
+
+                            <!-- Title & Goal -->
+                            <div class="flex-1 min-w-0" onclick="toggleCardExpand('${ex.id}')">
+                                <h4 class="font-bold text-base md:text-lg select-none cursor-pointer flex items-center gap-2 truncate ${isCompleted ? 'line-through text-slate-500' : 'text-slate-200'}">
+                                    ${ex.name}
+                                </h4>
+                                <span class="inline-block bg-slate-950 text-brand-400 font-semibold border border-slate-800 text-xs px-2.5 py-1 rounded-md mt-1">
+                                    ${ex.target}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown detail button -->
+                        <button onclick="toggleCardExpand('${ex.id}')" class="w-10 h-10 rounded-full hover:bg-slate-800/80 border border-transparent hover:border-slate-750 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-all">
+                            <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isExpanded ? 'rotate-180 text-brand-500' : ''}"></i>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Guidance -->
+                    <div class="collapse-content ${isExpanded ? 'show' : ''}">
+                        <div class="pt-3 border-t border-slate-800/60 mt-2 space-y-4 text-sm">
+
+                            <!-- Steps list -->
+                            ${ex.steps && ex.steps.length > 0 ? `
+                                <div>
+                                    <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">📌 動作步驟與作法：</div>
+                                    <ol class="space-y-1.5 pl-5 list-decimal text-slate-300">
+                                        ${ex.steps.map(step => `<li class="leading-relaxed">${step}</li>`).join('')}
+                                    </ol>
+                                </div>
+                            ` : `
+                                <div class="text-xs text-slate-500 italic">無設定詳細操作步驟。</div>
+                            `}
+
+                            <!-- Warning Tips -->
+                            ${ex.tips ? `
+                                <div class="bg-orange-500/10 border-l-4 border-orange-500 p-3 rounded-r-xl">
+                                    <div class="flex items-start gap-2.5">
+                                        <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5 shrink-0"></i>
+                                        <div>
+                                            <span class="text-xs font-bold text-orange-400 block mb-0.5">⚠️ 姿勢注意重點提醒：</span>
+                                            <p class="text-slate-300 font-semibold leading-relaxed">${ex.tips}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- Action bar inside expanded card -->
+                            <div class="flex justify-between items-center pt-2">
+                                ${isWalkTask ? `
+                                    <span class="text-[11px] text-teal-400 font-semibold">
+                                        ★ 每天雷打不動的最優先要務
+                                    </span>
+                                ` : `
+                                    <button onclick="deleteExerciseFromToday('${ex.id}')" class="text-xs text-rose-500 hover:text-rose-400 flex items-center gap-1 transition-colors">
+                                        <i class="fa-solid fa-trash-can"></i> 從今天排除此動作
+                                    </button>
+                                `}
+                                <span class="text-[11px] text-slate-500">
+                                    此為今日彈性清單，修改預設請點選「設定」
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+                `;
+            });
+
+            listContainer.innerHTML = html;
+        }
+
+        function updateProgress(todayLog) {
+            const total = todayLog.exercises.length;
+            const completed = todayLog.exercises.filter(ex => ex.completed).length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('progress-percentage').innerText = `${percentage}%`;
+
+            const barFill = document.getElementById('progress-bar-fill');
+            barFill.style.width = `${percentage}%`;
+
+            const spinner = document.getElementById('progress-spinner');
+            const checkIcon = document.getElementById('progress-check-icon');
+
+            if (percentage === 100 && total > 0) {
+                barFill.classList.add('shadow-[0_0_15px_rgba(16,185,129,0.5)]');
+                checkIcon.className = "fa-solid fa-circle-check text-lg text-brand-500 scale-125 transition-transform duration-300";
+                spinner.style.clipPath = 'polygon(0 0, 100% 0, 100% 100%, 0 100%)';
+            } else {
+                barFill.classList.remove('shadow-[0_0_15px_rgba(16,185,129,0.5)]');
+                checkIcon.className = "fa-solid fa-check text-xs text-slate-600";
+
+                let clipPathVal = 'polygon(50% 50%, 50% 0%';
+                if (percentage > 12.5) clipPathVal += ', 100% 0%';
+                if (percentage > 37.5) clipPathVal += ', 100% 100%';
+                if (percentage > 62.5) clipPathVal += ', 0% 100%';
+                if (percentage > 87.5) clipPathVal += ', 0% 0%';
+
+                const radians = (percentage / 100) * 2 * Math.PI - Math.PI / 2;
+                const x = 50 + 50 * Math.cos(radians);
+                const y = 50 + 50 * Math.sin(radians);
+                clipPathVal += `, ${x}% ${y}%)`;
+
+                spinner.style.clipPath = clipPathVal;
+            }
+        }
+
+        // --- 5. INTERACTIVE USER ACTIONS ---
+        function toggleExerciseComplete(id) {
+            const todayKey = getTodayDateString();
+            const log = state.dailyLogs[todayKey];
+            const exercise = log.exercises.find(ex => ex.id === id);
+
+            if (!exercise) return;
+
+            const wasCompleted = exercise.completed;
+            exercise.completed = !exercise.completed;
+
+            if (navigator.vibrate) {
+                navigator.vibrate(20);
+            }
+
+            const total = log.exercises.length;
+            const completedCount = log.exercises.filter(ex => ex.completed).length;
+            const fullyDoneNow = (completedCount === total && total > 0);
+
+            if (fullyDoneNow && !log.completed) {
+                log.completed = true;
+
+                if (state.lastActiveDate !== todayKey) {
+                    state.streak += 1;
+                    state.lastActiveDate = todayKey;
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.STREAK, state.streak);
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.LAST_ACTIVE, todayKey);
+                }
+
+                triggerConfetti();
+                showToast("🎉 太完美了！妳今天所有的運動課表完全達標！加油，保持下去！", "success");
+            } else if (!fullyDoneNow && log.completed) {
+                log.completed = false;
+
+                if (state.lastActiveDate === todayKey) {
+                    state.streak = Math.max(0, state.streak - 1);
+                    state.lastActiveDate = findPreviousActiveDateBefore(todayKey);
+
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.STREAK, state.streak);
+                    localStorage.setItem(LOCAL_STORAGE_KEYS.LAST_ACTIVE, state.lastActiveDate);
+                }
+                showToast("動作已標記未完成", "info");
+            } else {
+                if (exercise.completed) {
+                    showToast(`完成項目：${exercise.name}！做得好！`, "success");
+                }
+            }
+
+            saveLogsToLocalStorage();
+            updateUI();
+        }
+
+        function findPreviousActiveDateBefore(todayKey) {
+            const keys = Object.keys(state.dailyLogs).sort().reverse();
+            for (let key of keys) {
+                if (key < todayKey && state.dailyLogs[key].completed) {
+                    return key;
+                }
+            }
+            return "";
+        }
+
+        function toggleCardExpand(id) {
+            const todayKey = getTodayDateString();
+            const log = state.dailyLogs[todayKey];
+            const exercise = log.exercises.find(ex => ex.id === id);
+            if (exercise) {
+                exercise.expanded = !exercise.expanded;
+                saveLogsToLocalStorage();
+                updateUI();
+            }
+        }
+
+        function deleteExerciseFromToday(id) {
+            const todayKey = getTodayDateString();
+            const log = state.dailyLogs[todayKey];
+            const originalLength = log.exercises.length;
+            log.exercises = log.exercises.filter(ex => ex.id !== id);
+
+            if (log.exercises.length < originalLength) {
+                const total = log.exercises.length;
+                const completedCount = log.exercises.filter(ex => ex.completed).length;
+                log.completed = (total > 0 && completedCount === total);
+
+                saveLogsToLocalStorage();
+                updateUI();
+                showToast("已從今日排除此運動項目", "info");
+            }
+        }
+
+        function setRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * MOTIVATION_QUOTES.length);
+            document.getElementById('motivational-quote').innerText = MOTIVATION_QUOTES[randomIndex];
+        }
+
+        // --- 6. TOAST MESSAGES SYSTEM ---
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let bgClass = "bg-slate-900 border-slate-800 text-slate-100";
+            let icon = '<i class="fa-solid fa-info text-blue-400"></i>';
+
+            if (type === "success") {
+                bgClass = "bg-slate-900 border-brand-500/40 text-slate-100 shadow-[0_0_10px_rgba(16,185,129,0.15)]";
+                icon = '<i class="fa-solid fa-circle-check text-brand-500"></i>';
+            } else if (type === "warning") {
+                bgClass = "bg-slate-900 border-orange-500/40 text-slate-100";
+                icon = '<i class="fa-solid fa-triangle-exclamation text-orange-500"></i>';
+            }
+
+            toast.className = `flex items-center gap-3 border p-4 rounded-xl shadow-lg transform translate-y-2 opacity-0 transition-all duration-300 ${bgClass}`;
+            toast.innerHTML = `
+                <div class="text-base">${icon}</div>
+                <div class="text-xs font-semibold flex-1 leading-relaxed">${message}</div>
+                <button class="text-slate-500 hover:text-slate-350" onclick="this.parentElement.remove()">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // --- 7. CELEBRATION EFFECT (CONFETTI) ---
+        function triggerConfetti() {
+            const container = document.getElementById('confetti-container');
+            container.innerHTML = '';
+
+            const colors = ['#10b981', '#34d399', '#6ee7b7', '#f59e0b', '#fbbf24', '#f43f5e', '#38bdf8'];
+            const piecesCount = 80;
+
+            for (let i = 0; i < piecesCount; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+
+                piece.style.left = `${Math.random() * 100}%`;
+                piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDelay = `${Math.random() * 2}s`;
+                piece.style.width = `${Math.random() * 8 + 6}px`;
+                piece.style.height = `${Math.random() * 12 + 6}px`;
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+
+                container.appendChild(piece);
+            }
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 6000);
+        }
+
+        // --- 8. MINI CALENDAR SYSTEM ---
+        function renderCalendar() {
+            const container = document.getElementById('calendar-days');
+            const monthHeader = document.getElementById('calendar-month-name');
+            container.innerHTML = '';
+
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+
+            const monthNames = ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
+            monthHeader.innerText = `${currentYear}年 ${monthNames[currentMonth]}`;
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayIndex; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = "text-center text-slate-800 text-xs py-2";
+                emptyCell.innerText = "-";
+                container.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = (day === today.getDate());
+
+                const dayLog = state.dailyLogs[dateKey];
+
+                let dayColorClass = "bg-slate-900 hover:bg-slate-800/80 text-slate-400 border border-transparent";
+                let ringClass = "";
+
+                if (isToday) {
+                    ringClass = "ring-2 ring-brand-500/50";
+                }
+
+                if (dayLog) {
+                    const totalEx = dayLog.exercises.length;
+                    const completedEx = dayLog.exercises.filter(ex => ex.completed).length;
+
+                    if (totalEx > 0) {
+                        if (completedEx === totalEx) {
+                            dayColorClass = "bg-brand-500 text-slate-950 font-bold shadow-[0_0_8px_rgba(16,185,129,0.4)]";
+                        } else if (completedEx > 0) {
+                            dayColorClass = "bg-amber-500 text-slate-950 font-bold";
+                        } else {
+                            dayColorClass = "bg-rose-500/20 text-rose-300 border border-rose-500/20";
+                        }
+                    } else {
+                        dayColorClass = "bg-slate-900/60 text-slate-600 border border-slate-950";
+                    }
+                } else {
+                    dayColorClass = "bg-slate-900/40 text-slate-600 border border-transparent";
+                }
+
+                const dayCell = document.createElement('div');
+                dayCell.className = `w-full aspect-square flex items-center justify-center text-xs rounded-lg transition-all cursor-pointer ${dayColorClass} ${ringClass}`;
+                dayCell.innerText = day;
+                dayCell.title = dayLog ? `${dayLog.dayName} (${dayLog.exercises.filter(e => e.completed).length}/${dayLog.exercises.length} 完成)` : `無運動數據`;
+
+                dayCell.addEventListener('click', () => {
+                    if (dayLog) {
+                        const comp = dayLog.exercises.filter(e => e.completed).length;
+                        showToast(`🔍 ${day}日：${dayLog.dayName} (已完成 ${comp}/${dayLog.exercises.length})`, "info");
+                    } else {
+                        showToast(`📅 ${day}日：無歷史運動紀錄`, "info");
+                    }
+                });
+
+                container.appendChild(dayCell);
+            }
+        }
+
+
+        // --- 9. MODAL CONTROL: QUICK ADD TODAY (OPTION C) ---
+        function openQuickAddModal() {
+            document.getElementById('quick-add-modal').classList.remove('hidden');
+            document.getElementById('add-ex-name').focus();
+        }
+
+        function closeQuickAddModal() {
+            document.getElementById('quick-add-modal').classList.add('hidden');
+            document.getElementById('quick-add-form').reset();
+        }
+
+        function handleQuickAdd(event) {
+            event.preventDefault();
+            const name = document.getElementById('add-ex-name').value.trim();
+            const target = document.getElementById('add-ex-target').value.trim();
+            const rawSteps = document.getElementById('add-ex-steps').value;
+            const tips = document.getElementById('add-ex-tips').value.trim();
+
+            if (!name || !target) return;
+
+            const steps = rawSteps.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+            const newExercise = {
+                id: `quick-${Date.now()}`,
+                name: name,
+                target: target,
+                steps: steps,
+                tips: tips,
+                completed: false,
+                expanded: true
+            };
+
+            const todayKey = getTodayDateString();
+            state.dailyLogs[todayKey].exercises.push(newExercise);
+            state.dailyLogs[todayKey].completed = false;
+
+            saveLogsToLocalStorage();
+            updateUI();
+            closeQuickAddModal();
+            showToast(`已成功新增臨時運動：${name}`, "success");
+        }
+
+
+        // --- 10. MODAL CONTROL: WEEKLY TEMPLATE EDITOR ---
+        let templateTempState = {};
+
+        function openTemplateModal() {
+            templateTempState = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.TEMPLATES)) || JSON.parse(JSON.stringify(MY_CUSTOM_TEMPLATES));
+            document.getElementById('template-modal').classList.remove('hidden');
+            switchTemplateTab(1);
+        }
+
+        function closeTemplateModal() {
+            document.getElementById('template-modal').classList.add('hidden');
+        }
+
+        function switchTemplateTab(dayNum) {
+            activeDayTab = dayNum;
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn flex-1 md:flex-none text-left px-4 md:px-5 py-3 md:py-4 font-semibold text-xs md:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30";
+            });
+
+            const activeBtn = document.getElementById(`tab-${dayNum}`);
+            if (activeBtn) {
+                activeBtn.className = "tab-btn flex-1 md:flex-none text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs md:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-brand-500 text-brand-500 bg-slate-900";
+            }
+
+            renderTemplateEditArea();
+        }
+
+        function renderTemplateEditArea() {
+            const data = templateTempState[activeDayTab] || { dayName: `星期${translateDayIndexToChinese(activeDayTab)}`, exercises: [] };
+
+            document.getElementById('template-day-name').value = data.dayName;
+
+            const listContainer = document.getElementById('template-exercises-list');
+            listContainer.innerHTML = '';
+
+            if (data.exercises.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 border border-dashed border-slate-800 rounded-xl bg-slate-950/20 text-slate-500 text-sm">
+                        此日目前沒有預設運動。點擊右上方新增預設動作，或將此日規劃為大休息日！
+                    </div>
+                `;
+                return;
+            }
+
+            data.exercises.forEach((ex, idx) => {
+                const exCard = document.createElement('div');
+                exCard.className = "bg-slate-950/60 border border-slate-850 rounded-xl p-4 space-y-3";
+                exCard.innerHTML = `
+                    <div class="flex items-center gap-2 justify-between">
+                        <span class="text-xs font-bold text-brand-500 bg-brand-500/10 border border-brand-500/20 px-2 py-0.5 rounded">動作 ${idx + 1}</span>
+                        <button onclick="removeExerciseFromTemplate(${idx})" class="text-rose-400 hover:text-rose-500 text-xs flex items-center gap-0.5">
+                            <i class="fa-solid fa-trash-can"></i> 移除
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">動作名稱 *</label>
+                            <input type="text" oninput="updateTemplateField(${idx}, 'name', this.value)" value="${ex.name}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="動作名稱" required>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">設定目標 (組數/次數) *</label>
+                            <input type="text" oninput="updateTemplateField(${idx}, 'target', this.value)" value="${ex.target}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="例如：20下 * 3組" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">作法步驟 (每行一條步驟)</label>
+                        <textarea oninput="updateTemplateSteps(${idx}, this.value)" rows="3" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-1.5 text-slate-200 text-xs outline-none leading-relaxed" placeholder="第一步...&#10;第二步...">${ex.steps ? ex.steps.join('\n') : ''}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">⚠️ 動作姿勢關鍵字重點提醒</label>
+                        <input type="text" oninput="updateTemplateField(${idx}, 'tips', this.value)" value="${ex.tips || ''}" class="w-full bg-slate-900 border border-slate-800 focus:border-brand-500/80 rounded-lg px-3 py-2 text-slate-200 text-xs outline-none" placeholder="例如：千萬不要拱腰 / 臀部一定要推到底">
+                    </div>
+                `;
+                listContainer.appendChild(exCard);
+            });
+        }
+
+        function updateTemplateField(index, field, value) {
+            templateTempState[activeDayTab].exercises[index][field] = value;
+        }
+
+        function updateTemplateSteps(index, value) {
+            templateTempState[activeDayTab].exercises[index].steps = value.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+        }
+
+        function addExerciseToTemplate() {
+            const newEx = {
+                id: `template-ex-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                name: "新增動作項目",
+                target: "10下 * 3組",
+                steps: [],
+                tips: ""
+            };
+            templateTempState[activeDayTab].exercises.push(newEx);
+            renderTemplateEditArea();
+        }
+
+        function removeExerciseFromTemplate(index) {
+            templateTempState[activeDayTab].exercises.splice(index, 1);
+            renderTemplateEditArea();
+        }
+
+        function saveCurrentTemplateChanges() {
+            const dayNameInput = document.getElementById('template-day-name').value.trim();
+            templateTempState[activeDayTab].dayName = dayNameInput || `星期${translateDayIndexToChinese(activeDayTab)}`;
+
+            const currentExercises = templateTempState[activeDayTab].exercises;
+            for (let ex of currentExercises) {
+                if (!ex.name.trim() || !ex.target.trim()) {
+                    showToast("❌ 請填寫所有預設動作的名稱與目標設定！", "warning");
+                    return;
+                }
+            }
+
+            state.weeklyTemplates = JSON.parse(JSON.stringify(templateTempState));
+            localStorage.setItem(LOCAL_STORAGE_KEYS.TEMPLATES, JSON.stringify(state.weeklyTemplates));
+
+            const todayKey = getTodayDateString();
+            const todayLog = state.dailyLogs[todayKey];
+            if (todayLog && todayLog.dayOfWeek === activeDayTab) {
+                const isPartiallyDone = todayLog.exercises.some(ex => ex.completed && ex.id !== "fixed-walk-task");
+
+                if (!isPartiallyDone || confirm("妳剛才修改了今天的預設課表，是否立即同步更新今天的運動清單？(這將會重置今天已勾選的紀錄)")) {
+                    todayLog.dayName = state.weeklyTemplates[activeDayTab].dayName;
+
+                    const newExercises = state.weeklyTemplates[activeDayTab].exercises.map(ex => ({
+                        ...ex,
+                        completed: false,
+                        expanded: false
+                    }));
+
+                    // Keep walk task at top
+                    const walkTask = todayLog.exercises.find(ex => ex.id === "fixed-walk-task");
+                    if (walkTask) {
+                        newExercises.unshift(walkTask);
+                    }
+
+                    todayLog.exercises = newExercises;
+                    todayLog.completed = false;
+                    saveLogsToLocalStorage();
+                    setupTodayWorkout();
+                }
+            }
+
+            updateUI();
+            showToast("💾 預設課表修改已成功儲存！", "success");
+            closeTemplateModal();
+        }
+
+        function resetToDemoTemplates() {
+            if (confirm("確定要將所有星期的課表全部還原回妳的專屬原廠課表設定嗎？")) {
+                templateTempState = JSON.parse(JSON.stringify(MY_CUSTOM_TEMPLATES));
+                renderTemplateEditArea();
+                showToast("已載入原廠預設，請記得按下「儲存變更」以生效！", "info");
+            }
+        }
+    </script>
+</body>
+</html>
