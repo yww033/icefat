@@ -84,7 +84,7 @@
 
     <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
 
-    <!-- MAIN CONTAINER (Perfect for mobile, iPad & Desktop) -->
+    <!-- MAIN CONTAINER -->
     <div class="max-w-7xl mx-auto px-4 py-4 md:py-8">
 
         <!-- HEADER -->
@@ -99,7 +99,7 @@
                 </div>
             </div>
 
-            <!-- Header Action Controls (Perfect 50/50 Grid on Mobile, Flex on Desktop) -->
+            <!-- Header Action Controls -->
             <div class="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full lg:w-auto">
                 <!-- Streak Badge -->
                 <div class="bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/30 text-orange-400 px-3 py-2 sm:py-2.5 rounded-xl flex items-center justify-center sm:justify-start gap-2 font-bold shadow-lg text-sm">
@@ -117,7 +117,7 @@
             </div>
         </header>
 
-        <!-- GOLDEN RULE NOTIFICATION (Pinned at top of dashboard) -->
+        <!-- GOLDEN RULE NOTIFICATION -->
         <div class="bg-gradient-to-r from-teal-500/15 to-brand-500/10 border border-brand-500/20 rounded-2xl p-4 sm:p-5 mb-6 shadow-lg relative overflow-hidden">
             <div class="absolute right-0 top-0 translate-x-4 -translate-y-4 text-brand-500/5 text-8xl pointer-events-none select-none font-bold">
                 🚶
@@ -175,18 +175,49 @@
                     </div>
                 </div>
 
+                <!-- NEW: REHAB / MOTIVATION MODE WIDGET (TINY STEPS STRATEGY) -->
+                <div id="rehab-widget-card" class="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all">
+                    <div class="min-w-0">
+                        <h4 id="rehab-widget-title" class="text-xs sm:text-sm font-bold text-indigo-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-feather-pointed text-indigo-300 animate-bounce"></i> 提不起勁做重訓嗎？試試「輕量修復模式」！
+                        </h4>
+                        <p id="rehab-widget-desc" class="text-[11px] sm:text-xs text-slate-400 mt-1 leading-relaxed">
+                            只做 5 個胸椎肩胛骨放鬆伸展 + 散步。做完直接點亮今日綠燈，無壓力重建習慣！
+                        </p>
+                    </div>
+                    <button id="rehab-mode-toggle-btn" onclick="toggleRehabMode()" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-slate-950 font-extrabold rounded-xl text-xs whitespace-nowrap shrink-0 transition-all shadow-lg shadow-indigo-500/10">
+                        🌱 開啟輕量修復
+                    </button>
+                </div>
+
                 <!-- Active Workouts List -->
                 <div class="space-y-4">
-                    <div class="flex justify-between items-center gap-2">
+                    <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 mb-2">
                         <h3 class="text-sm sm:text-base font-bold flex items-center gap-2 text-slate-300 truncate">
                             <i class="fa-solid fa-list-check text-brand-500"></i>
                             今日動作清單
                         </h3>
-                        <!-- Add custom exercise for today (Option C) -->
-                        <button onclick="openQuickAddModal()" class="text-[11px] bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 shrink-0 transition-all duration-150">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>今日臨時項目</span>
-                        </button>
+                        <!-- Controls: Swapping & Quick Add -->
+                        <div class="flex items-center sm:justify-end gap-2.5 w-full sm:w-auto">
+                            <!-- ROUTINE SWAP SELECTOR - PERFECT IOS/MOBILE RENDERING STYLED AS BUTTON -->
+                            <div class="relative w-full sm:w-auto flex-1 sm:flex-none">
+                                <select id="routine-override-select" onchange="handleRoutineOverride(this.value)" class="text-xs bg-slate-900 text-slate-100 border border-slate-700 hover:border-brand-500 rounded-xl px-3 py-2 w-full sm:w-56 outline-none cursor-pointer transition-all appearance-none pr-8 bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%2010l3%203%203-3%22%20stroke%3D%22%2310b981%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem_1.25rem] bg-[right_0.5rem_center] bg-no-repeat font-bold">
+                                    <option value="" disabled selected>🔄 補做/更換重訓課表...</option>
+                                    <option value="1">週一：臀部重點日</option>
+                                    <option value="2">週二：背部姿勢</option>
+                                    <option value="3">週三：臀凹陷</option>
+                                    <option value="4">週四：恢復日</option>
+                                    <option value="5">週五：下臀圓臀</option>
+                                    <option value="6">週六：休整放鬆</option>
+                                    <option value="7">週日：充電日</option>
+                                </select>
+                            </div>
+
+                            <button onclick="openQuickAddModal()" class="text-[11px] bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 border border-brand-500/30 px-3 py-2 rounded-xl font-bold flex items-center justify-center gap-1 shrink-0 transition-all duration-150">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>臨時項目</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Empty State -->
@@ -329,7 +360,7 @@
             <!-- Modal Content - Split layout -->
             <div class="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
 
-                <!-- Left panel: Day tabs (Perfect Horizontal scrolling on Mobile, Vertical on Desktop) -->
+                <!-- Left panel: Day tabs -->
                 <div class="w-full md:w-1/4 border-b md:border-b-0 md:border-r border-slate-800 flex md:flex-col overflow-x-auto md:overflow-y-auto bg-slate-950/40 divide-x md:divide-x-0 md:divide-y divide-slate-850 shrink-0 no-scrollbar">
                     <button onclick="switchTemplateTab(1)" id="tab-1" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週一：臀部日</button>
                     <button onclick="switchTemplateTab(2)" id="tab-2" class="tab-btn shrink-0 text-center md:text-left px-4 md:px-5 py-3 md:py-4 font-bold text-xs sm:text-sm transition-all border-b-2 md:border-b-0 md:border-l-2 border-transparent text-slate-400 hover:bg-slate-800/20 whitespace-nowrap">週二：背部姿勢</button>
@@ -378,7 +409,7 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER (Adjusted width for iPhone SE / Narrow devices) -->
+    <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full"></div>
 
 
@@ -400,7 +431,7 @@
             lastActiveDate: ""
         };
 
-        // Preloaded Personalized Templates (Mon to Sun) with added safety warnings
+        // Preloaded Personalized Templates (Mon to Sun)
         const MY_CUSTOM_TEMPLATES = {
             1: {
                 dayName: "週一：臀部重點日 (30分鐘)",
@@ -521,7 +552,7 @@
                         name: "深蹲＋彈力帶",
                         target: "15下 * 3組",
                         steps: ["屁股往後坐", "膝蓋往外推", "起來夾屁股"],
-                        tips: "彈力帶會往內拉膝蓋，所以雙腳落地一定要踩穩，膝蓋用力向外頂對抗彈力帶。重心在腳跟，挺胸不駝背，起身時臀部往前推並用力夾緊。"
+                        tips: "彈力帶會往內拉膝蓋，所以雙腳落地一定要踩穩，膝蓋用力向外頂對抗彈力帶.重心在腳跟，挺胸不駝背，起身時臀部往前推並用力夾緊。"
                     },
                     {
                         id: "ex-5-4",
@@ -546,16 +577,79 @@
             },
             7: {
                 dayName: "週日：週末休整與充電日",
-                exercises: [] // Resting day
+                exercises: []
             }
         };
 
+        // NEW: 5 Daily Thoracic & Scapula Rehabilitation Exercises (Always preloaded daily)
+        const REHAB_TASKS = [
+            {
+                id: "rehab-1",
+                name: "📖【復甦】Open Book 胸廓旋轉 (長期看螢幕必做)",
+                target: "左側躺開右手 15 次 / 右側躺開左手 10 次",
+                steps: [
+                    "左側躺。膝蓋彎曲，大腿與身體呈約 90 度，雙側膝蓋盡量緊貼在一起不分開。",
+                    "雙手向前伸直，雙掌疊在一起，放鬆頸部。",
+                    "右手（上方手）慢慢往後像翻書一樣打開，頭部隨之轉動，眼睛一路看著右手移動。",
+                    "打開到妳的肩膀最大極限，在最開點停留 2 秒，再緩慢地原路回來疊合。"
+                ],
+                tips: "最重要動作！骨盆千萬不要跟著翻過去，膝蓋一定要貼在一起！改善：長期看右側螢幕、肩膀前後不對稱、胸廓旋轉、肩頸緊繃。"
+            },
+            {
+                id: "rehab-2",
+                name: "🧱【復甦】牆角胸肌伸展 (改善圓肩與肩膀前縮)",
+                target: "左右各維持 30 秒 × 3 次",
+                steps: [
+                    "尋找身旁的牆角或門框站立。",
+                    "以伸展右側為例：右手貼緊牆面，手肘與手臂高度與胸平行，角度呈約 45～60 度。",
+                    "保持雙腳站穩，身體慢慢往左側旋轉，感受前胸拉扯開來的力量。",
+                    "在最酸脹點維持 30 秒，深呼吸放鬆，再緩慢轉回。"
+                ],
+                tips: "注意：脖子跟斜方肌（肩頸交界處）絕對不可以感到痠痛或用力代償！如果痠了，請調低手肘貼牆高度。改善圓肩、鎖骨不對稱。"
+            },
+            {
+                id: "rehab-3",
+                name: "🐢【復甦】Chin Tuck 收下巴 (改善頭前傾與烏龜頸)",
+                target: "10下 × 2組 (每次用力維持 5 秒)",
+                steps: [
+                    "靠牆站立，後腦勺輕碰牆壁，眼睛看正前方。",
+                    "想像前方有人用手指水平頂著妳的下巴，妳用脖子後側發力將下巴往後水平滑動，做出極深的雙下巴。",
+                    "在最大雙下巴的位置用力頂住維持 5 秒，然後緩慢放鬆放回。"
+                ],
+                tips: "必須是水平後收！千萬不要低頭或縮脖子！後腦勺全程貼著牆壁。改善：頭前傾、烏龜頸、下巴偏斜。"
+            },
+            {
+                id: "rehab-4",
+                name: "🗂️【復甦】肩胛骨後收夾紙 (改善左肩酸痛不平衡)",
+                target: "背部夾緊 15 下 (每次維持 5 秒)",
+                steps: [
+                    "端正坐姿或站姿，雙手自然下垂垂放於身體兩側。",
+                    "想像背後兩片肩胛骨中間，正夾著一張非常珍貴的紙。",
+                    "用妳中上背的力量，緩慢地將兩片肩胛骨往中間靠近夾緊，不讓紙掉落。",
+                    "夾緊並維持 5 秒，再緩慢放鬆還原"
+                ],
+                tips: "注意不要聳肩，也不要挺胸挺到腰椎塌陷疼痛！改善：左肩痠痛、肩膀前後不對稱、圓肩。"
+            },
+            {
+                id: "rehab-5",
+                name: "💆【復甦】提肩胛肌伸展 (放鬆脖子與肩膀交界緊繃)",
+                target: "左右各 2 次 × 每次維持 30 秒",
+                steps: [
+                    "以拉伸左側為例：坐在椅上，左手用力抓住椅子邊緣，鎖定肩膀防止左肩被拉起來。",
+                    "將頭部先水平轉向右前方約 45 度方向。",
+                    "慢慢低下頭，像要看著右側腋下那樣往下看。",
+                    "將右手輕輕放在後腦勺上方，利用手部的自然重量微微往下加壓，加深脖子側後方的拉伸感。"
+                ],
+                tips: "手部只是輕放增加重力，絕對不要用力死命硬拉！拉伸感會出現在左後頸、左肩上方與肩胛骨內角。改善肩頸酸痛、脖子長短不均。"
+            }
+        ];
+
         const MOTIVATION_QUOTES = [
-            "「慢慢做，把姿勢做對。一下高質量的動作，勝過十下借力、受傷的練習。」",
-            "「上班坐 1～2 小時，起立走動 2 分鐘，對妳骨盆健康的功勞，勝過多做 100 下青蛙趴！」",
-            "" + "「姿勢永遠優先於重量或次數。注意今天動作卡片底部的『重點提醒』喔！」",
-            "「水滴石穿，持之以恆，妳的身體在每一個看似微小的動作中，都正在悄悄進化。」",
-            "「最難的往往不是運動本身，而是穿上運動服、鋪好瑜珈墊的那個瞬間。」"
+            "「沒關係的，只動一下也比坐著強！開啟『輕量修復模式』伸展一下，妳今天依然超棒！」",
+            "「上班累了，起立走動 2 分鐘，其實這才是一天中最划算的健康投資。」",
+            "「習慣的建立在於『次數』而不是完美度。哪怕只做 30 秒，只要動了就是巨大的勝利！」",
+            "「今天覺得很累？那就只做拉筋伸展。對身體溫柔，才能走得更長更遠。」",
+            "「兩次運動已經是很好的開始囉！每一次重返墊子的妳，都值得給自己一個讚！」"
         ];
 
         // --- 2. INITIALIZATION ---
@@ -638,21 +732,34 @@
                     expanded: false
                 })) : [];
 
+                // 1. Prepend office walk task
                 exercisesList.unshift({
                     ...walkTask,
                     completed: false,
-                    expanded: true 
+                    expanded: true
+                });
+
+                // 2. Append the 5 Scapular Rehab Tasks
+                REHAB_TASKS.forEach(task => {
+                    exercisesList.push({
+                        ...task,
+                        completed: false,
+                        expanded: false
+                    });
                 });
 
                 state.dailyLogs[todayKey] = {
                     dayName: dayName,
                     dayOfWeek: dayOfWeek,
                     exercises: exercisesList,
-                    completed: false
+                    completed: false,
+                    rehabOnlyMode: false // Default to standard mode
                 };
                 saveLogsToLocalStorage();
             } else {
                 const log = state.dailyLogs[todayKey];
+
+                // Ensure walkTask is present
                 const hasWalkTask = log.exercises.some(ex => ex.id === "fixed-walk-task");
                 if (!hasWalkTask) {
                     log.exercises.unshift({
@@ -660,8 +767,24 @@
                         completed: false,
                         expanded: true
                     });
-                    saveLogsToLocalStorage();
                 }
+
+                // Ensure rehab tasks are injected if they're missing
+                REHAB_TASKS.forEach(task => {
+                    const hasTask = log.exercises.some(ex => ex.id === task.id);
+                    if (!hasTask) {
+                        log.exercises.push({
+                            ...task,
+                            completed: false,
+                            expanded: false
+                        });
+                    }
+                });
+
+                if (log.rehabOnlyMode === undefined) {
+                    log.rehabOnlyMode = false;
+                }
+                saveLogsToLocalStorage();
             }
 
             validateStreak(todayKey);
@@ -708,6 +831,26 @@
             `;
             document.getElementById('streak-counter').innerText = state.streak;
 
+            // Update Rehab mode switch widget state
+            const rehabBtn = document.getElementById('rehab-mode-toggle-btn');
+            const rehabWidgetTitle = document.getElementById('rehab-widget-title');
+            const rehabWidgetDesc = document.getElementById('rehab-widget-desc');
+            const rehabWidgetCard = document.getElementById('rehab-widget-card');
+
+            if (todayLog.rehabOnlyMode) {
+                rehabBtn.innerText = "💪 恢復完整重訓";
+                rehabBtn.className = "px-4 py-2 bg-brand-500 hover:bg-brand-600 text-slate-950 font-extrabold rounded-xl text-xs whitespace-nowrap shrink-0 transition-all shadow-lg shadow-brand-500/10";
+                rehabWidgetTitle.innerHTML = `<i class="fa-solid fa-seedling text-brand-400 animate-pulse"></i> 已開啟「輕量修復模式」！`;
+                rehabWidgetDesc.innerText = "今天的主力強度重訓已休眠。做完下面的 5 個復甦伸展 + 散步，妳今天就能輕鬆點亮日曆綠燈！";
+                rehabWidgetCard.className = "bg-gradient-to-r from-emerald-950/40 to-teal-950/20 border border-brand-500/30 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all";
+            } else {
+                rehabBtn.innerText = "🌱 開啟輕量修復";
+                rehabBtn.className = "px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-slate-950 font-extrabold rounded-xl text-xs whitespace-nowrap shrink-0 transition-all shadow-lg shadow-indigo-500/10";
+                rehabWidgetTitle.innerHTML = `<i class="fa-solid fa-feather-pointed text-indigo-300 animate-bounce"></i> 提不起勁做重訓嗎？試試「輕量修復模式」！`;
+                rehabWidgetDesc.innerText = "今天只做 5 個胸椎肩胛骨放鬆伸展 + 散步。做完直接點亮今日綠燈，無壓力重建習慣！";
+                rehabWidgetCard.className = "bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 transition-all";
+            }
+
             renderWorkoutList(todayLog.exercises);
             updateProgress(todayLog);
             renderCalendar();
@@ -716,6 +859,10 @@
         function renderWorkoutList(exercises) {
             const listContainer = document.getElementById('workout-list');
             const emptyState = document.getElementById('empty-state');
+
+            const todayKey = getTodayDateString();
+            const todayLog = state.dailyLogs[todayKey];
+            const isRehabMode = todayLog ? todayLog.rehabOnlyMode : false;
 
             if (!exercises || exercises.length === 0) {
                 listContainer.innerHTML = '';
@@ -726,20 +873,42 @@
             emptyState.classList.add('hidden');
             let html = '';
 
-            exercises.forEach((ex, index) => {
+            // Separate tasks
+            const rehabAndWalk = exercises.filter(ex => ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-"));
+            const strength = exercises.filter(ex => ex.id !== "fixed-walk-task" && !ex.id.startsWith("rehab-"));
+
+            // Filter shown tasks based on Rehab Mode toggle
+            const renderedExercises = isRehabMode ? rehabAndWalk : exercises;
+
+            renderedExercises.forEach((ex, index) => {
                 const isCompleted = ex.completed;
                 const isExpanded = ex.expanded || false;
                 const isWalkTask = (ex.id === "fixed-walk-task");
+                const isRehabTask = ex.id.startsWith("rehab-");
+
+                // Styling variations for task priority
+                let cardStyle = "bg-slate-900 border-slate-800 hover:border-slate-700";
+                let badgeStyle = "bg-slate-950 text-brand-400 border-slate-850";
+
+                if (isWalkTask) {
+                    cardStyle = "bg-gradient-to-br from-slate-900 to-teal-950/20 border-teal-500/20 hover:border-teal-500/30";
+                    badgeStyle = "bg-teal-950/40 text-teal-400 border-teal-500/20";
+                } else if (isRehabTask) {
+                    cardStyle = "bg-gradient-to-br from-slate-900 to-indigo-950/20 border-indigo-500/20 hover:border-indigo-500/30";
+                    badgeStyle = "bg-indigo-950/40 text-indigo-400 border-indigo-500/20";
+                }
+
+                if (isCompleted) {
+                    cardStyle = "border-brand-500/30 opacity-75 bg-slate-900/40";
+                }
 
                 html += `
-                <div class="border transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col gap-3 sm:gap-4
-                    ${isWalkTask ? 'bg-gradient-to-br from-slate-900 to-teal-950/20' : 'bg-slate-900'}
-                    ${isCompleted ? 'border-brand-500/30 opacity-75 bg-slate-900/40' : 'border-slate-800 hover:border-slate-700'}" id="card-${ex.id}">
+                <div class="border transition-all duration-300 rounded-2xl p-4 sm:p-5 shadow-md flex flex-col gap-3 sm:gap-4 ${cardStyle}" id="card-${ex.id}">
 
                     <!-- Top section of card: Aligned top for multilines -->
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                            <!-- Tap checkbox zone - NEVER Squish on mobile -->
+                            <!-- Tap checkbox zone -->
                             <button onclick="toggleExerciseComplete('${ex.id}')" class="w-10 h-10 rounded-xl border flex items-center justify-center transition-all shrink-0 ${isCompleted ? 'bg-brand-500 border-brand-500 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-slate-700 text-transparent hover:border-brand-500 bg-slate-950'}" aria-label="標記完成">
                                 <i class="fa-solid fa-check text-base font-bold ${isCompleted ? 'text-slate-950' : 'hover:text-brand-500/20'}"></i>
                             </button>
@@ -749,13 +918,13 @@
                                 <h4 class="font-bold text-sm sm:text-base md:text-lg select-none cursor-pointer flex items-start gap-2 break-words leading-snug ${isCompleted ? 'line-through text-slate-500' : 'text-slate-200'}">
                                     ${ex.name}
                                 </h4>
-                                <span class="inline-block bg-slate-950 text-brand-400 font-bold border border-slate-850 text-[10px] sm:text-xs px-2.5 py-0.5 rounded-md mt-1.5 whitespace-nowrap">
+                                <span class="inline-block ${badgeStyle} font-bold border text-[10px] sm:text-xs px-2.5 py-0.5 rounded-md mt-1.5 whitespace-nowrap">
                                     ${ex.target}
                                 </span>
                             </div>
                         </div>
 
-                        <!-- Dropdown detail button - NEVER Squish -->
+                        <!-- Dropdown detail button -->
                         <button onclick="toggleCardExpand('${ex.id}')" class="w-10 h-10 rounded-full hover:bg-slate-800/80 border border-transparent hover:border-slate-750 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-all shrink-0">
                             <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isExpanded ? 'rotate-180 text-brand-500' : ''}"></i>
                         </button>
@@ -783,7 +952,7 @@
                                     <div class="flex items-start gap-2">
                                         <i class="fa-solid fa-triangle-exclamation text-orange-500 mt-0.5 shrink-0"></i>
                                         <div class="min-w-0">
-                                            <span class="text-[10px] sm:text-xs font-bold text-orange-400 block mb-0.5">⚠️ 姿勢注意重點提醒：</span>
+                                            <span class="text-[10px] sm:text-xs font-bold text-orange-400 block mb-0.5">⚠️ 姿勢注意與拉伸提醒：</span>
                                             <p class="text-slate-200 font-semibold leading-relaxed break-words">${ex.tips}</p>
                                         </div>
                                     </div>
@@ -792,9 +961,9 @@
 
                             <!-- Action bar inside expanded card -->
                             <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 pt-2 border-t border-slate-800/40">
-                                ${isWalkTask ? `
+                                ${isWalkTask || isRehabTask ? `
                                     <span class="text-[10px] sm:text-[11px] text-teal-400 font-semibold">
-                                        ★ 每天雷打不動的最優先要務
+                                        ${isWalkTask ? '★ 每天雷打不動的最優先要務' : '🧘 每日必做胸椎肩胛骨修復舒緩'}
                                     </span>
                                 ` : `
                                     <button onclick="deleteExerciseFromToday('${ex.id}')" class="text-[10px] sm:text-xs text-rose-500 hover:text-rose-400 flex items-center justify-start gap-1 transition-colors py-1">
@@ -813,12 +982,39 @@
                 `;
             });
 
+            // If Rehab Mode is active, show comforting placeholder for hidden items
+            if (isRehabMode && strength.length > 0) {
+                html += `
+                <div class="bg-indigo-950/20 border border-dashed border-indigo-500/30 rounded-2xl p-5 text-center shadow-inner">
+                    <p class="text-xs sm:text-sm text-indigo-300 font-bold">
+                        💤 今天主力鍛鍊課表 (${strength.length} 個動作) 已休眠中！
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                        放鬆心情，今天不給身體壓力。只要完成上方 5 個溫和復甦與散步，妳今天就點燈成功囉！
+                    </p>
+                    <button onclick="toggleRehabMode(false)" class="mt-3 px-4 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all">
+                        💪 體力與動能回來了？展開重訓動作
+                    </button>
+                </div>
+                `;
+            }
+
             listContainer.innerHTML = html;
         }
 
         function updateProgress(todayLog) {
-            const total = todayLog.exercises.length;
-            const completed = todayLog.exercises.filter(ex => ex.completed).length;
+            const isRehab = todayLog.rehabOnlyMode || false;
+
+            // Progress ignores standard strength tasks if rehabOnlyMode is enabled
+            const eligibleExercises = todayLog.exercises.filter(ex => {
+                if (isRehab) {
+                    return ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-");
+                }
+                return true;
+            });
+
+            const total = eligibleExercises.length;
+            const completed = eligibleExercises.filter(ex => ex.completed).length;
             const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
             document.getElementById('progress-percentage').innerText = `${percentage}%`;
@@ -867,8 +1063,17 @@
                 navigator.vibrate(20);
             }
 
-            const total = log.exercises.length;
-            const completedCount = log.exercises.filter(ex => ex.completed).length;
+            // Determine checkoff list based on mode
+            const isRehab = log.rehabOnlyMode || false;
+            const eligibleExercises = log.exercises.filter(ex => {
+                if (isRehab) {
+                    return ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-");
+                }
+                return true;
+            });
+
+            const total = eligibleExercises.length;
+            const completedCount = eligibleExercises.filter(ex => ex.completed).length;
             const fullyDoneNow = (completedCount === total && total > 0);
 
             if (fullyDoneNow && !log.completed) {
@@ -902,6 +1107,91 @@
 
             saveLogsToLocalStorage();
             updateUI();
+        }
+
+        // Action: Toggle Rehab Mode
+        function toggleRehabMode(forceValue) {
+            const todayKey = getTodayDateString();
+            const log = state.dailyLogs[todayKey];
+            if (!log) return;
+
+            if (forceValue !== undefined) {
+                log.rehabOnlyMode = forceValue;
+            } else {
+                log.rehabOnlyMode = !log.rehabOnlyMode;
+            }
+
+            // Re-evaluate complete state upon switching modes
+            const isRehab = log.rehabOnlyMode;
+            const eligibleExercises = log.exercises.filter(ex => {
+                if (isRehab) {
+                    return ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-");
+                }
+                return true;
+            });
+            const total = eligibleExercises.length;
+            const completedCount = eligibleExercises.filter(ex => ex.completed).length;
+            log.completed = (total > 0 && completedCount === total);
+
+            saveLogsToLocalStorage();
+            updateUI();
+
+            if (log.rehabOnlyMode) {
+                showToast("🧘 已開啟輕量修復模式！重訓動作已打包休眠，今天專注做拉伸和散步。", "info");
+            } else {
+                showToast("💪 已切換回完整訓練模式！今天加油，盡心做就好了！", "success");
+            }
+        }
+
+        // Action: Re-schedule/Override today's routine (Swap day)
+        function handleRoutineOverride(dayNum) {
+            if (!dayNum) return;
+            const todayKey = getTodayDateString();
+            const log = state.dailyLogs[todayKey];
+            if (!log) return;
+
+            const selectedTemplate = state.weeklyTemplates[dayNum];
+            if (!selectedTemplate) return;
+
+            const confirmMsg = `確定要將今天的主力重訓課表更換為【${selectedTemplate.dayName}】嗎？\n(這會將今天除「散步」與「修復復甦」外的動作替換為該日動作，已勾選的重訓紀錄將被重置)`;
+
+            if (confirm(confirmMsg)) {
+                // Filter out previous strength tasks (keep fixed walk task and rehab tasks)
+                const fixedTasks = log.exercises.filter(ex => ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-"));
+
+                // Deep copy new strength tasks
+                const newStrengthTasks = selectedTemplate.exercises.map(ex => ({
+                    ...ex,
+                    completed: false,
+                    expanded: false
+                }));
+
+                // Combine keeping rehab and walk at front/back
+                log.exercises = [...fixedTasks, ...newStrengthTasks];
+                log.dayName = `補做 - ${selectedTemplate.dayName}`;
+
+                // Re-evaluate daily log completion status
+                const isRehab = log.rehabOnlyMode || false;
+                const eligibleExercises = log.exercises.filter(ex => {
+                    if (isRehab) {
+                        return ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-");
+                    }
+                    return true;
+                });
+                const total = eligibleExercises.length;
+                const completedCount = eligibleExercises.filter(ex => ex.completed).length;
+                log.completed = (total > 0 && completedCount === total);
+
+                saveLogsToLocalStorage();
+                updateUI();
+
+                // Reset selector dropdown value back to default
+                document.getElementById('routine-override-select').value = "";
+
+                showToast(`🔄 今日主力課表成功置換為：${selectedTemplate.dayName}！`, "success");
+            } else {
+                document.getElementById('routine-override-select').value = "";
+            }
         }
 
         function findPreviousActiveDateBefore(todayKey) {
@@ -961,6 +1251,9 @@
             } else if (type === "warning") {
                 bgClass = "bg-slate-900 border-orange-500/40 text-slate-100";
                 icon = '<i class="fa-solid fa-triangle-exclamation text-orange-500"></i>';
+            } else if (type === "info") {
+                bgClass = "bg-slate-900 border-indigo-500/40 text-slate-100";
+                icon = '<i class="fa-solid fa-seedling text-indigo-400"></i>';
             }
 
             toast.className = `flex items-center gap-2.5 border p-3.5 rounded-xl shadow-lg transform translate-y-2 opacity-0 transition-all duration-350 ${bgClass}`;
@@ -1048,8 +1341,16 @@
                 }
 
                 if (dayLog) {
-                    const totalEx = dayLog.exercises.length;
-                    const completedEx = dayLog.exercises.filter(ex => ex.completed).length;
+                    const isRehab = dayLog.rehabOnlyMode || false;
+                    const eligibleExercises = dayLog.exercises.filter(ex => {
+                        if (isRehab) {
+                            return ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-");
+                        }
+                        return true;
+                    });
+
+                    const totalEx = eligibleExercises.length;
+                    const completedEx = eligibleExercises.filter(ex => ex.completed).length;
 
                     if (totalEx > 0) {
                         if (completedEx === totalEx) {
@@ -1073,8 +1374,10 @@
 
                 dayCell.addEventListener('click', () => {
                     if (dayLog) {
-                        const comp = dayLog.exercises.filter(e => e.completed).length;
-                        showToast(`🔍 ${day}日：${dayLog.dayName} (已完成 ${comp}/${dayLog.exercises.length})`, "info");
+                        const isRehab = dayLog.rehabOnlyMode || false;
+                        const eligible = dayLog.exercises.filter(ex => !isRehab || ex.id === "fixed-walk-task" || ex.id.startsWith("rehab-"));
+                        const comp = eligible.filter(e => e.completed).length;
+                        showToast(`🔍 ${day}日：${dayLog.dayName} (已完成 ${comp}/${eligible.length}${isRehab ? ' [修復模式]' : ''})`, "info");
                     } else {
                         showToast(`📅 ${day}日：無歷史運動紀錄`, "info");
                     }
@@ -1252,7 +1555,7 @@
             const todayKey = getTodayDateString();
             const todayLog = state.dailyLogs[todayKey];
             if (todayLog && todayLog.dayOfWeek === activeDayTab) {
-                const isPartiallyDone = todayLog.exercises.some(ex => ex.completed && ex.id !== "fixed-walk-task");
+                const isPartiallyDone = todayLog.exercises.some(ex => ex.completed && ex.id !== "fixed-walk-task" && !ex.id.startsWith("rehab-"));
 
                 if (!isPartiallyDone || confirm("妳剛才修改了今天的預設課表，是否立即同步更新今天的運動清單？(這將會重置今天已勾選的紀錄)")) {
                     todayLog.dayName = state.weeklyTemplates[activeDayTab].dayName;
@@ -1267,6 +1570,14 @@
                     if (walkTask) {
                         newExercises.unshift(walkTask);
                     }
+
+                    // Keep rehab tasks
+                    REHAB_TASKS.forEach(task => {
+                        const hasTask = newExercises.some(ex => ex.id === task.id);
+                        if (!hasTask) {
+                            newExercises.push({ ...task, completed: false, expanded: false });
+                        }
+                    });
 
                     todayLog.exercises = newExercises;
                     todayLog.completed = false;
